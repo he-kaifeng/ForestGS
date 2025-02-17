@@ -8,7 +8,8 @@ from PyQt6.QtWidgets import (
     QFileDialog, QStatusBar, QLabel, QHeaderView, QMessageBox
 )
 
-from data_management_tab import DataManagementTab
+from geno_management_tab import GenoManagementTab
+from src.phe_management_tab import PhenoManagementTab
 
 
 class MainWindow(QMainWindow):
@@ -87,8 +88,8 @@ class MainWindow(QMainWindow):
     def setup_workspace_tabs(self):
         """ 设置右侧工作区标签页 """
         self.workspace_tabs = QTabWidget()
-        self.workspace_tabs.addTab(DataManagementTab(plink_path='../bin/plink.exe'), "基因型数据处理")
-        self.workspace_tabs.addTab(QLabel("表型数据管理"), "表型数据处理")
+        self.workspace_tabs.addTab(GenoManagementTab(plink_path='../bin/plink.exe'), "基因型数据处理")
+        self.workspace_tabs.addTab(PhenoManagementTab(), "表型数据处理")
         self.workspace_tabs.addTab(QLabel("基因组选择模型"), "GWAS")
         self.workspace_tabs.addTab(QLabel("育种值预测"), "GS")
 

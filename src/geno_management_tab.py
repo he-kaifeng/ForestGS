@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
 from file_preview_dialog import FilePreviewDialog
 
 
-class DataManagementTab(QWidget):
+class GenoManagementTab(QWidget):
     def __init__(self, plink_path):
         super().__init__()
         # 初始化转换参数
