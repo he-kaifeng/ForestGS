@@ -23,9 +23,6 @@ class MainWindow(QMainWindow):
         self.init_ui()
         self.init_connections()
 
-    # --------------------------
-    # 初始化方法
-    # --------------------------
     def init_models(self):
         """ 初始化数据模型 """
         # 文件系统模型，用于目录树显示
@@ -61,9 +58,6 @@ class MainWindow(QMainWindow):
         """ 初始化信号连接 """
         self.file_tree.doubleClicked.connect(self.on_file_double_click)  # 双击文件
 
-    # --------------------------
-    # UI 组件设置方法
-    # --------------------------
     def setup_file_tree(self):
         """ 设置文件夹显示区域 """
         self.file_tree_widget = QWidget()
@@ -124,9 +118,6 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
         self.status_bar.showMessage("就绪")
 
-    # --------------------------
-    # 核心功能方法
-    # --------------------------
     def open_project(self):
         """ 打开项目目录 """
         dir_path = QFileDialog.getExistingDirectory(self, "选择项目目录")

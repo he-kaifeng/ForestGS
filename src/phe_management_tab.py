@@ -1,9 +1,11 @@
 import os
 import logging
+
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTextEdit, QLineEdit, QDoubleSpinBox, QGroupBox, QFormLayout, QFileDialog,
-    QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
+    QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy, QCheckBox
 )
 
 from file_preview_dialog import FilePreviewDialog
@@ -29,6 +31,8 @@ class PhenoManagementTab(QWidget):
 
         # 初始化参数设置组
         param_group = self.create_param_group()
+        normalization_group = self.create_normalization_group()
+        recoding_group = self.create_recoding_group()
 
         # 初始化运行日志组
         log_group = self.create_log_group()
@@ -37,6 +41,8 @@ class PhenoManagementTab(QWidget):
         grid_layout = QGridLayout()
         grid_layout.addWidget(file_group, 0, 0, 1, 2)  # 跨两列
         grid_layout.addWidget(param_group, 1, 0, 1, 2)  # 跨两列
+        grid_layout.addWidget(normalization_group, 2, 0)
+        grid_layout.addWidget(recoding_group, 2, 1)
 
         # 设置列宽自适应
         grid_layout.setColumnStretch(0, 1)
@@ -86,15 +92,14 @@ class PhenoManagementTab(QWidget):
         return file_group
 
     def create_param_group(self):
-        # --- 参数设置组 ---
-        param_group = QGroupBox("异常值检测")
+        param_group = QGroupBox("异常值过滤")
         param_layout = QFormLayout()
 
-        # +++ 新增性状列选择组件 +++
+        # 性状列选择
         self.trait_combobox = QComboBox()
         self.trait_combobox.setEditable(False)
         self.trait_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        param_layout.addRow("选择分析性状:", self.trait_combobox)
+        param_layout.addRow("选择过滤性状:", self.trait_combobox)
 
         # 标准差倍数选择
         self.sd_spin = QDoubleSpinBox()
@@ -105,12 +110,79 @@ class PhenoManagementTab(QWidget):
         param_layout.addRow("异常值阈值:", self.sd_spin)
 
         # 执行按钮
-        self.btn_run = QPushButton("执行异常值过滤")
-        self.btn_run.setStyleSheet("background-color: #2196F3; color: white;")
-        param_layout.addWidget(self.btn_run)
+        self.btn_param = QPushButton("执行异常值过滤")
+        self.btn_param.setStyleSheet("background-color: #2196F3; color: white;")
+        param_layout.addWidget(self.btn_param)
 
         param_group.setLayout(param_layout)
         return param_group
+
+    def create_recoding_group(self):
+        recoding_group = QGroupBox("数据归一化")
+        recoding_layout = QFormLayout()
+
+        self.recoding_combobox = QComboBox()
+        self.recoding_combobox.setEditable(False)
+        self.recoding_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        recoding_layout.addRow("选择分析性状:", self.recoding_combobox)
+
+        self.normalization_method = QComboBox()
+        self.normalization_method.addItems(["Z-score标准化", "Min-Max归一化"])
+        recoding_layout.addRow("归一化方法:", self.normalization_method)
+        recoding_group.setLayout(recoding_layout)
+
+        self.btn_recoding = QPushButton("执行数据归一化")
+        self.btn_recoding.setStyleSheet("background-color: #2196F3; color: white;")
+        recoding_layout.addWidget(self.btn_recoding)
+
+        return recoding_group
+
+    def create_normalization_group(self):
+        normalization_group = QGroupBox("数据重编码")
+        main_layout = QVBoxLayout()
+
+        # ==== 性状选择 ====
+        form_layout = QFormLayout()
+        self.normalization_combobox = QComboBox()
+        form_layout.addRow(QLabel("选择重编码性状:"), self.normalization_combobox)
+
+        # ==== 转换方向 ====
+        self.recoding_direction = QComboBox()
+        self.recoding_direction.addItems([
+            "word2num（表型→数字）",
+            "num2word（数字→表型）"
+        ])
+        form_layout.addRow(QLabel("转换方向:"), self.recoding_direction)
+
+        main_layout.addLayout(form_layout)
+
+        # ==== 文件选择（保持原有结构）====
+        self.mapping_file_widget = QWidget()
+        file_layout = QHBoxLayout()
+        self.mapping_file_edit = QLineEdit()
+        self.mapping_file_btn = QPushButton("选择转化表")
+        self.mapping_file_btn.clicked.connect(lambda: self.select_path(self.output_dir, "file"))
+        file_layout.addWidget(self.mapping_file_edit)
+        file_layout.addWidget(self.mapping_file_btn)
+        self.mapping_file_widget.setLayout(file_layout)
+        main_layout.addWidget(QLabel("转化表文件:"))
+        main_layout.addWidget(self.mapping_file_widget)
+        self.mapping_file_widget.hide()
+
+        # ==== 事件绑定 ====
+        self.recoding_direction.currentIndexChanged.connect(self._toggle_mapping_file)
+
+        # ==== 执行按钮 ====
+        self.execute_recoding_btn = QPushButton("执行转换")
+        main_layout.addWidget(self.execute_recoding_btn, alignment=Qt.AlignmentFlag.AlignRight)
+
+        normalization_group.setLayout(main_layout)
+        return normalization_group
+
+    def _toggle_mapping_file(self):
+        """切换转化表文件控件的可见性"""
+        is_num2word = "num2word" in self.recoding_direction.currentText()
+        self.mapping_file_widget.setVisible(is_num2word)
 
     def create_log_group(self):
         # --- 运行日志 ---
@@ -126,7 +198,7 @@ class PhenoManagementTab(QWidget):
         """通用路径选择方法"""
         try:
             if mode == "file":
-                path, _ = QFileDialog.getOpenFileName(self, "选择表型文件")
+                path, _ = QFileDialog.getOpenFileName(self, "选择文件")
             elif mode == "directory":
                 path = QFileDialog.getExistingDirectory(self, "选择输出目录")
             else:

@@ -233,7 +233,7 @@ class GenoManagementTab(QWidget):
 
     def handle_file_path(self, file_path):
         try:
-            logging.info(f"[DataManagementTab] 接收文件路径: {file_path}")
+            logging.info(f"[GenoManagementTab] 接收文件路径: {file_path}")
             if not os.path.isfile(file_path):
                 raise FileNotFoundError("文件路径无效，请先选择或传递文件！")
             self.file_path.setText(file_path)
@@ -282,6 +282,8 @@ class GenoManagementTab(QWidget):
         self.log_view.append(f"执行命令：{' '.join(command)}")
 
         try:
+            if input_file is None or output_file is None:
+                QMessageBox.warning("请检查文件是否存在")
             # 使用subprocess运行plink命令
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             for line in iter(process.stdout.readline, ''):
