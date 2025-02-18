@@ -115,7 +115,7 @@ class GenoManagementTab(QWidget):
         self.btn_convert = QPushButton("执行转换")
         self.btn_convert.clicked.connect(self.convert_format)
         self.btn_convert.setStyleSheet("background-color: #FF9800; color: white;")
-        convert_layout.addRow(self.btn_convert)
+        convert_layout.addWidget(self.btn_convert)
         convert_group.setLayout(convert_layout)
         return convert_group
 
@@ -127,7 +127,7 @@ class GenoManagementTab(QWidget):
         self.maf_spin.setValue(0.05)
         self.maf_spin.setSingleStep(0.01)
         self.maf_spin.setSuffix(" (范围: 0.0 - 0.5)")
-        qc_layout.addRow("最小等位基因频率 (MAF):", self.maf_spin)
+        qc_layout.addRow("最小等位基因频率:", self.maf_spin)
 
         self.missing_geno_spin = QDoubleSpinBox()
         self.missing_geno_spin.setRange(0.0, 1.0)
@@ -159,16 +159,16 @@ class GenoManagementTab(QWidget):
         filter_layout = QFormLayout()
 
         self.filter_sample_input, btn_filter_sample = self.create_file_selector("保留样本列表文件路径:")
-        filter_layout.addRow(btn_filter_sample)
+        filter_layout.addRow("保留样本列表文件路径:", btn_filter_sample)
 
         self.exclude_sample_input, btn_exclude_sample = self.create_file_selector("排除样本列表文件路径:")
-        filter_layout.addRow(btn_exclude_sample)
+        filter_layout.addRow("排除样本列表文件路径:", btn_exclude_sample)
 
         self.filter_snp_input, btn_filter_snp = self.create_file_selector("保留SNP列表文件路径:")
-        filter_layout.addRow(btn_filter_snp)
+        filter_layout.addRow("保留SNP列表文件路径:", btn_filter_snp)
 
         self.exclude_snp_input, btn_exclude_sample = self.create_file_selector("排除SNP列表文件路径:")
-        filter_layout.addRow(btn_exclude_sample)
+        filter_layout.addRow("排除SNP列表文件路径:", btn_exclude_sample)
 
         self.btn_filter = QPushButton("执行数据过滤")
         self.btn_filter.setStyleSheet("background-color: #FFC107; color: white;")
