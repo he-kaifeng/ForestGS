@@ -1,5 +1,4 @@
 import os
-import logging
 import subprocess
 
 from PyQt6.QtWidgets import (
@@ -8,9 +7,6 @@ from PyQt6.QtWidgets import (
     QLabel, QGridLayout
 )
 from file_preview_dialog import FilePreviewDialog
-
-# 设置日志记录
-logging.basicConfig(filename='app.log', level=logging.INFO)
 
 
 class GenoManagementTab(QWidget):
@@ -225,20 +221,15 @@ class GenoManagementTab(QWidget):
 
             if path:
                 line_edit.setText(path)
-            else:
-                logging.warning("User canceled the file selection dialog.")
         except Exception as e:
-            logging.error(f"Error in select_path: {e}")
             QMessageBox.critical(self, "错误", f"选择路径时发生错误: {str(e)}")
 
     def handle_file_path(self, file_path):
         try:
-            logging.info(f"[GenoManagementTab] 接收文件路径: {file_path}")
             if not os.path.isfile(file_path):
                 raise FileNotFoundError("文件路径无效，请先选择或传递文件！")
             self.file_path.setText(file_path)
         except Exception as e:
-            logging.error(f"Error in handle_file_path: {e}")
             QMessageBox.critical(self, "错误", str(e))
 
     # 文件预览
@@ -251,7 +242,6 @@ class GenoManagementTab(QWidget):
             dialog = FilePreviewDialog(file_path, self)
             dialog.exec()
         except Exception as e:
-            logging.error(f"Error in preview_file: {e}")
             QMessageBox.critical(self, "错误", str(e))
 
     # 文件格式转换

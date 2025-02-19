@@ -1,6 +1,6 @@
-import logging
 import os
 
+import pandas as pd
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
@@ -9,10 +9,6 @@ from PyQt6.QtWidgets import (
 )
 
 from file_preview_dialog import FilePreviewDialog
-
-# 设置日志记录
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class PhenoManagementTab(QWidget):
@@ -33,6 +29,7 @@ class PhenoManagementTab(QWidget):
         param_group = self.create_param_group()
         normalization_group = self.create_normalization_group()
         recoding_group = self.create_recoding_group()
+        missing_value_group = self.create_missing_value_group()
 
         # 初始化运行日志组
         log_group = self.create_log_group()
@@ -40,9 +37,10 @@ class PhenoManagementTab(QWidget):
         # --- 布局排列 ---
         grid_layout = QGridLayout()
         grid_layout.addWidget(file_group, 0, 0, 1, 2)  # 跨两列
-        grid_layout.addWidget(param_group, 1, 0, 1, 2)  # 跨两列
+        grid_layout.addWidget(param_group, 1, 1)
         grid_layout.addWidget(normalization_group, 2, 0)
         grid_layout.addWidget(recoding_group, 2, 1)
+        grid_layout.addWidget(missing_value_group, 1, 0)
 
         # 设置列宽自适应
         grid_layout.setColumnStretch(0, 1)
@@ -65,12 +63,12 @@ class PhenoManagementTab(QWidget):
         file_layout.addWidget(input_file_label)
 
         file_path_layout = QHBoxLayout()
-        self.input_file_path = QLineEdit()
+        self.file_path = QLineEdit()
         btn_select_file = QPushButton("选择目标文件")
-        btn_select_file.clicked.connect(lambda: self.select_path(self.input_file_path, mode="file"))
+        btn_select_file.clicked.connect(self.open_file)
         btn_preview = QPushButton("预览")
         btn_preview.clicked.connect(self.preview_file)
-        file_path_layout.addWidget(self.input_file_path, stretch=3)
+        file_path_layout.addWidget(self.file_path, stretch=3)
         file_path_layout.addWidget(btn_select_file, stretch=1)
         file_path_layout.addWidget(btn_preview, stretch=1)
         file_layout.addLayout(file_path_layout)
@@ -91,6 +89,40 @@ class PhenoManagementTab(QWidget):
         file_group.setLayout(file_layout)
         return file_group
 
+    def open_file(self):
+        self.select_path(self.file_path, mode="file")
+        file_path = self.file_path.text()
+        self.load_phenotype_data(file_path)
+
+    def load_phenotype_data(self, file_path):
+        try:
+            # 文件格式自动识别
+            if file_path.endswith('.csv'):
+                self.phenotype_data = pd.read_csv(file_path, encoding='utf-8')
+            elif file_path.endswith(('.xlsx', '.xls')):
+                self.phenotype_data = pd.read_excel(file_path, engine='openpyxl')
+            elif file_path.endswith('.txt'):
+                self.phenotype_data = pd.read_csv(file_path, sep='\t')
+            else:
+                raise ValueError("不支持的文件格式")
+            self.columns = self.phenotype_data.columns.tolist()
+            self.columns[0] = 'all'
+            self.add_items()
+            self.log_view.setText(f"成功加载表型数据\t{file_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "数据加载错误",
+                                 f"无法加载表型数据：\n{str(e)}\n"
+                                 f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
+            self.log_view.setText("数据加载错误"
+                                  f"无法加载表型数据：\n{str(e)}\n"
+                                  f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
+
+    def add_items(self):
+        self.trait_combobox.addItems(self.columns)
+        self.recoding_combobox.addItems(self.columns)
+        self.normalization_combobox.addItems(self.columns)
+        self.missing_value_combobox.addItems(self.columns)
+
     def create_param_group(self):
         param_group = QGroupBox("异常值过滤")
         param_layout = QFormLayout()
@@ -105,7 +137,7 @@ class PhenoManagementTab(QWidget):
         self.sd_spin = QDoubleSpinBox()
         self.sd_spin.setRange(1.0, 5.0)
         self.sd_spin.setValue(3.0)
-        self.sd_spin.setSingleStep(0.5)
+        self.sd_spin.setSingleStep(1)
         self.sd_spin.setSuffix(" 倍标准差")
         param_layout.addRow("异常值阈值:", self.sd_spin)
 
@@ -124,7 +156,7 @@ class PhenoManagementTab(QWidget):
         self.recoding_combobox = QComboBox()
         self.recoding_combobox.setEditable(False)
         self.recoding_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        recoding_layout.addRow("选择分析性状:", self.recoding_combobox)
+        recoding_layout.addRow("选择归一化性状:", self.recoding_combobox)
 
         self.normalization_method = QComboBox()
         self.normalization_method.addItems(["Z-score标准化", "Min-Max归一化"])
@@ -179,6 +211,26 @@ class PhenoManagementTab(QWidget):
         normalization_group.setLayout(main_layout)
         return normalization_group
 
+    def create_missing_value_group(self):
+        # --- 缺失值填充组 ---
+        missing_value_group = QGroupBox("缺失值填充")
+        missing_value_layout = QFormLayout()
+        # 性状列选择
+        self.missing_value_combobox = QComboBox()
+        self.missing_value_combobox.setEditable(False)
+        self.missing_value_combobox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        missing_value_layout.addRow("选择填充性状:", self.missing_value_combobox)
+        # 填充方法选择
+        self.missing_value_method = QComboBox()
+        self.missing_value_method.addItems(["均值填充", "中位数填充", "众数填充", "前向填充", "后向填充"])
+        missing_value_layout.addRow("填充方法:", self.missing_value_method)
+        # 执行按钮
+        self.btn_missing_value = QPushButton("执行缺失值填充")
+        self.btn_missing_value.setStyleSheet("background-color: #2196F3; color: white;")
+        missing_value_layout.addWidget(self.btn_missing_value)
+        missing_value_group.setLayout(missing_value_layout)
+        return missing_value_group
+
     def _toggle_mapping_file(self):
         """切换转化表文件控件的可见性"""
         is_num2word = "num2word" in self.recoding_direction.currentText()
@@ -207,12 +259,11 @@ class PhenoManagementTab(QWidget):
             if path:
                 line_edit.setText(path)
         except Exception as e:
-            logger.error(f"Error selecting path: {e}")
             QMessageBox.critical(self, "错误", f"选择路径时发生错误: {e}")
 
     def preview_file(self):
         """文件预览功能"""
-        file_path = self.input_file_path.text()
+        file_path = self.file_path.text()
         if not file_path or not os.path.isfile(file_path):
             QMessageBox.warning(self, "错误", "无效的文件路径！")
             return
@@ -225,12 +276,11 @@ class PhenoManagementTab(QWidget):
             dialog = FilePreviewDialog(file_path, self)
             dialog.exec()
         except Exception as e:
-            logger.error(f"Error previewing file: {e}")
             QMessageBox.critical(self, "错误", f"预览文件时发生错误: {e}")
 
     def validate_input(self):
         """验证输入合法性"""
-        if not self.input_file_path.text() or not os.path.isfile(self.input_file_path.text()):
+        if not self.file_path.text() or not os.path.isfile(self.file_path.text()):
             QMessageBox.warning(self, "错误", "请先选择有效的表型数据文件！")
             return False
 
@@ -247,3 +297,12 @@ class PhenoManagementTab(QWidget):
             return False
 
         return True
+
+    def handle_file_path(self, file_path):
+        try:
+            if not os.path.isfile(file_path):
+                raise FileNotFoundError("文件路径无效，请先选择或传递文件！")
+            self.file_path.setText(file_path)
+            self.load_phenotype_data(file_path)
+        except Exception as e:
+            QMessageBox.critical(self, "错误", str(e))
