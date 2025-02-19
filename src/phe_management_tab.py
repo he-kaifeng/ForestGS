@@ -1,11 +1,11 @@
-import os
 import logging
+import os
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTextEdit, QLineEdit, QDoubleSpinBox, QGroupBox, QFormLayout, QFileDialog,
-    QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy, QCheckBox
+    QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
 )
 
 from file_preview_dialog import FilePreviewDialog
