@@ -1,7 +1,7 @@
 import os
 
 import pandas as pd
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QThread
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTextEdit, QLineEdit, QDoubleSpinBox, QGroupBox, QFormLayout, QFileDialog,
@@ -9,12 +9,80 @@ from PyQt6.QtWidgets import (
 )
 
 from file_preview_dialog import FilePreviewDialog
+from pheno_operations import PhenoOperations
 
 
 class PhenoManagementTab(QWidget):
     def __init__(self):
         super().__init__()
         self.init_ui()
+        self.worker = PhenoOperations()  # 业务逻辑对象
+        self.thread = QThread()  # 新线程
+        self.worker.moveToThread(self.thread)  # 将业务逻辑移动到新线程
+        self.connect_signals()  # 连接信号和槽
+        self.thread.start()
+
+    def connect_signals(self):
+        # 连接业务逻辑的信号到UI的槽
+        self.worker.progress_signal.connect(self.log_view.append)
+        self.worker.error_signal.connect(lambda msg: QMessageBox.critical(self, "错误", msg))
+        self.worker.result_signal.connect(self.handle_result)
+
+        # 连接按钮点击事件到业务逻辑
+        self.btn_param.clicked.connect(self.run_outlier_filter)
+        self.btn_recoding.clicked.connect(self.run_normalization)
+        self.btn_missing_value.clicked.connect(self.run_missing_value_fill)
+        self.btn_execute_recoding.clicked.connect(self.run_recoding)
+
+    def run_missing_value_fill(self):
+        """执行缺失值填充"""
+        if not self.validate_input():
+            return
+        trait = self.missing_value_combobox.currentText()
+        method = self.missing_value_method.currentText()
+        self.log_view.setText(f'执行缺失值值填充\n\t填充性状:{trait}\n\t填充方法:{method}')
+        self.worker.start_missing_value_fill.emit(self.phenotype_data, trait, method)
+
+    def run_outlier_filter(self):
+        """执行异常值过滤"""
+        if not self.validate_input():
+            return
+        trait = self.trait_combobox.currentText()
+        sd_multiplier = self.sd_spin.value()
+        self.worker.start_outlier_filter.emit(self.phenotype_data, trait, sd_multiplier)
+
+    def run_normalization(self):
+        """执行数据归一化"""
+        if not self.validate_input():
+            return
+        trait = self.recoding_combobox.currentText()
+        method = self.normalization_method.currentText()
+        self.worker.start_normalization.emit(self.phenotype_data, trait, method)
+
+    def run_recoding(self):
+        """执行数据重编码"""
+        if not self.validate_input():
+            return
+        trait = self.normalization_combobox.currentText()
+        direction = self.recoding_direction.currentText()
+        mapping_file = None
+        if direction == "num2word（数字→表型）":
+            mapping_file = self.mapping_file_edit.text()
+            if not mapping_file or not os.path.isfile(mapping_file):
+                QMessageBox.warning(self, "错误", "请选择有效的转化表文件！")
+                return
+        self.worker.start_recoding.emit(self.phenotype_data, trait, direction, mapping_file)
+
+    def handle_result(self, result):
+        """处理业务逻辑返回的结果"""
+        self.phenotype_data = result
+        self.log_view.append("数据处理完成，结果已更新")
+
+    def closeEvent(self, event):
+        """关闭窗口时停止线程"""
+        self.thread.quit()
+        self.thread.wait()
+        super().closeEvent(event)
 
     def init_ui(self):
         # 主垂直布局
@@ -25,7 +93,7 @@ class PhenoManagementTab(QWidget):
         # 初始化文件选择组
         file_group = self.create_file_group()
 
-        # 初始化参数设置组
+        # 初始化功能组
         param_group = self.create_param_group()
         normalization_group = self.create_normalization_group()
         recoding_group = self.create_recoding_group()
@@ -34,7 +102,7 @@ class PhenoManagementTab(QWidget):
         # 初始化运行日志组
         log_group = self.create_log_group()
 
-        # --- 布局排列 ---
+        # 布局排列
         grid_layout = QGridLayout()
         grid_layout.addWidget(file_group, 0, 0, 1, 2)  # 跨两列
         grid_layout.addWidget(param_group, 1, 1)
@@ -53,7 +121,6 @@ class PhenoManagementTab(QWidget):
         self.setLayout(main_layout)
 
     def create_file_group(self):
-        # --- 文件选择组 ---
         file_group = QGroupBox("表型文件选择")
         file_layout = QVBoxLayout()
 
@@ -205,8 +272,8 @@ class PhenoManagementTab(QWidget):
         self.recoding_direction.currentIndexChanged.connect(self._toggle_mapping_file)
 
         # ==== 执行按钮 ====
-        self.execute_recoding_btn = QPushButton("执行转换")
-        main_layout.addWidget(self.execute_recoding_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        self.btn_execute_recoding = QPushButton("执行转换")
+        main_layout.addWidget(self.btn_execute_recoding, alignment=Qt.AlignmentFlag.AlignRight)
 
         normalization_group.setLayout(main_layout)
         return normalization_group
