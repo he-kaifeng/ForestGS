@@ -12,6 +12,7 @@ from file_preview_dialog import FilePreviewDialog
 from pheno_operations import PhenoOperations
 
 
+# todo 相关性分析
 class PhenoManagementTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -40,8 +41,8 @@ class PhenoManagementTab(QWidget):
             return
         trait = self.missing_value_combobox.currentText()
         method = self.missing_value_method.currentText()
-        self.log_view.setText(f'执行缺失值值填充\n\t填充性状:{trait}\n\t填充方法:{method}')
-        self.worker.start_missing_value_fill.emit(self.phenotype_data, trait, method)
+        out_dir = self.output_dir.text()
+        self.worker.start_missing_value_fill.emit(self.phenotype_data, trait, method, out_dir)
 
     def run_outlier_filter(self):
         """执行异常值过滤"""
@@ -49,7 +50,8 @@ class PhenoManagementTab(QWidget):
             return
         trait = self.trait_combobox.currentText()
         sd_multiplier = self.sd_spin.value()
-        self.worker.start_outlier_filter.emit(self.phenotype_data, trait, sd_multiplier)
+        out_dir = self.output_dir.text()
+        self.worker.start_outlier_filter.emit(self.phenotype_data, trait, sd_multiplier, out_dir)
 
     def run_normalization(self):
         """执行数据归一化"""
@@ -57,7 +59,8 @@ class PhenoManagementTab(QWidget):
             return
         trait = self.recoding_combobox.currentText()
         method = self.normalization_method.currentText()
-        self.worker.start_normalization.emit(self.phenotype_data, trait, method)
+        out_dir = self.output_dir.text()
+        self.worker.start_normalization.emit(self.phenotype_data, trait, method, out_dir)
 
     def run_recoding(self):
         """执行数据重编码"""
@@ -65,13 +68,14 @@ class PhenoManagementTab(QWidget):
             return
         trait = self.normalization_combobox.currentText()
         direction = self.recoding_direction.currentText()
+        out_dir = self.output_dir.text()
         mapping_file = None
         if direction == "num2word（数字→表型）":
             mapping_file = self.mapping_file_edit.text()
             if not mapping_file or not os.path.isfile(mapping_file):
                 QMessageBox.warning(self, "错误", "请选择有效的转化表文件！")
                 return
-        self.worker.start_recoding.emit(self.phenotype_data, trait, direction, mapping_file)
+        self.worker.start_recoding.emit(self.phenotype_data, trait, direction, out_dir, mapping_file)
 
     def handle_result(self, result):
         """处理业务逻辑返回的结果"""
@@ -157,8 +161,13 @@ class PhenoManagementTab(QWidget):
         return file_group
 
     def open_file(self):
+        # 获取文件路径
         self.select_path(self.file_path, mode="file")
         file_path = self.file_path.text()
+        # 检查文件路径是否为空或无效
+        if not file_path or not os.path.isfile(file_path):
+            return
+        # 加载表型数据
         self.load_phenotype_data(file_path)
 
     def load_phenotype_data(self, file_path):
@@ -185,9 +194,14 @@ class PhenoManagementTab(QWidget):
                                   f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
 
     def add_items(self):
-        self.trait_combobox.addItems(self.columns)
+        self.trait_combobox.clear()
+        self.recoding_combobox.clear()
+        self.normalization_combobox.clear()
+        self.missing_value_combobox.clear()
+
+        self.trait_combobox.addItems(self.columns[1:])
         self.recoding_combobox.addItems(self.columns)
-        self.normalization_combobox.addItems(self.columns)
+        self.normalization_combobox.addItems(self.columns[1:])
         self.missing_value_combobox.addItems(self.columns)
 
     def create_param_group(self):
@@ -226,7 +240,7 @@ class PhenoManagementTab(QWidget):
         recoding_layout.addRow("选择归一化性状:", self.recoding_combobox)
 
         self.normalization_method = QComboBox()
-        self.normalization_method.addItems(["Z-score标准化", "Min-Max归一化"])
+        self.normalization_method.addItems(["Z-score", "Min-Max"])
         recoding_layout.addRow("归一化方法:", self.normalization_method)
         recoding_group.setLayout(recoding_layout)
 
@@ -255,12 +269,12 @@ class PhenoManagementTab(QWidget):
 
         main_layout.addLayout(form_layout)
 
-        # ==== 文件选择（保持原有结构）====
+        # ==== 文件选择====
         self.mapping_file_widget = QWidget()
         file_layout = QHBoxLayout()
         self.mapping_file_edit = QLineEdit()
         self.mapping_file_btn = QPushButton("选择转化表")
-        self.mapping_file_btn.clicked.connect(lambda: self.select_path(self.output_dir, "file"))
+        self.mapping_file_btn.clicked.connect(lambda: self.select_path(self.mapping_file_edit, "file"))
         file_layout.addWidget(self.mapping_file_edit)
         file_layout.addWidget(self.mapping_file_btn)
         self.mapping_file_widget.setLayout(file_layout)
@@ -271,7 +285,6 @@ class PhenoManagementTab(QWidget):
         # ==== 事件绑定 ====
         self.recoding_direction.currentIndexChanged.connect(self._toggle_mapping_file)
 
-        # ==== 执行按钮 ====
         self.btn_execute_recoding = QPushButton("执行转换")
         main_layout.addWidget(self.btn_execute_recoding, alignment=Qt.AlignmentFlag.AlignRight)
 

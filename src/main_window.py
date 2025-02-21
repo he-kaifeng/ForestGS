@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (
 )
 
 from geno_management_tab import GenoManagementTab
-from src.phe_management_tab import PhenoManagementTab
+from phe_management_tab import PhenoManagementTab
 
 
 class MainWindow(QMainWindow):
