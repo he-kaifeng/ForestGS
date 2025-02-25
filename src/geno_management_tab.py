@@ -1,12 +1,15 @@
 import os
-import subprocess
 
+from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTextEdit, QLineEdit, QDoubleSpinBox, QCheckBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QFileDialog,
     QLabel, QGridLayout
 )
+from dask.array import extract
+
 from file_preview_dialog import FilePreviewDialog
+from geno_operations import GenoOperations
 
 
 class GenoManagementTab(QWidget):
@@ -18,8 +21,12 @@ class GenoManagementTab(QWidget):
             "VCF格式 (.vcf)": "vcf"
         }
         self.plink_path = plink_path
-        self.temp_files = []
         self.init_ui()
+        self.worker = GenoOperations(self.plink_path)  # 业务逻辑对象
+        self.thread = QThread()  # 新线程
+        self.worker.moveToThread(self.thread)  # 将业务逻辑移动到新线程
+        self.connect_signals()  # 连接信号和槽
+        self.thread.start()
 
     def init_ui(self):
         main_layout = QVBoxLayout()
@@ -39,6 +46,76 @@ class GenoManagementTab(QWidget):
         main_layout.addWidget(log_group, stretch=1)
 
         self.setLayout(main_layout)
+
+    def connect_signals(self):
+        # 连接业务逻辑的信号到UI的槽
+        self.worker.progress_signal.connect(self.log_view.append)
+        self.worker.error_signal.connect(lambda msg: QMessageBox.critical(self, "错误", msg))
+        self.worker.result_signal.connect(self.handle_result)
+        # 连接按钮点击事件到业务逻辑
+        self.btn_convert.clicked.connect(self.run_convert_format)
+        self.btn_run_qc.clicked.connect(self.run_quality_control)
+        self.btn_filter.clicked.connect(self.run_filter_data)
+        self.btn_genetic_analysis.clicked.connect(self.run_genetic_analysis)
+
+    def run_convert_format(self):
+        """执行文件格式转换"""
+        if not self.validate_input():
+            return
+        input_file = self.file_path.text()
+        output_dir = self.output_path.text()
+        target_format = self.supported_formats[self.target_format.currentText()]
+        self.worker.start_convert_format.emit(input_file, output_dir, target_format)
+
+    def run_quality_control(self):
+        """执行质量控制"""
+        if not self.validate_input():
+            return
+        input_file = self.file_path.text()
+        output_dir = self.output_path.text()
+        maf = self.maf_spin.value()
+        missing_geno = self.missing_geno_spin.value()
+        missing_sample = self.missing_sample_spin.value()
+        r2 = self.r2_spin.value()
+        self.worker.start_quality_control.emit(input_file, output_dir, maf, missing_geno, missing_sample, r2)
+
+    def run_filter_data(self):
+        """执行数据过滤"""
+        if not self.validate_input():
+            return
+        input_file = self.file_path.text()
+        output_dir = self.output_path.text()
+        filter_sample = self.filter_sample_input.text()
+        exclude_sample = self.exclude_sample_input.text()
+        filter_snp = self.filter_snp_input.text()
+        exclude_snp = self.exclude_snp_input.text()
+        self.worker.start_filter_data.emit(input_file, output_dir, filter_sample, exclude_sample, filter_snp,
+                                           exclude_snp)
+
+    def run_genetic_analysis(self):
+        """执行遗传结构分析"""
+        if not self.validate_input():
+            return
+        input_file = self.file_path.text()
+        output_dir = self.output_path.text()
+        pca_components = self.pca_components_spin.value()
+        relationship_method = self.relationship_method.currentText()
+        extract_file = self.extract_file_edit.text()
+        self.worker.start_genetic_analysis.emit(input_file, output_dir, pca_components, relationship_method,extract_file)
+
+    def handle_result(self, result):
+        """处理业务逻辑返回的结果"""
+        self.log_view.append("数据处理完成，结果已更新")
+
+    def validate_input(self):
+        """验证输入是否有效"""
+        if not self.file_path.text() or not os.path.isfile(self.file_path.text()):
+            QMessageBox.warning(self, "错误", "请选择有效的输入文件！")
+            return False
+        if not self.output_path.text() or not os.path.isdir(self.output_path.text()):
+            QMessageBox.warning(self, "错误", "请选择有效的输出目录！")
+            return False
+        return True
 
     def create_file_group(self):
         file_group = QGroupBox("文件选择")
@@ -109,7 +186,6 @@ class GenoManagementTab(QWidget):
         self.target_format.addItems(["PLINK文本格式 (.ped)", "PLINK二进制格式 (.bed)", "VCF格式 (.vcf)"])
         convert_layout.addRow("转换为格式:", self.target_format)
         self.btn_convert = QPushButton("执行转换")
-        self.btn_convert.clicked.connect(self.convert_format)
         self.btn_convert.setStyleSheet("background-color: #FF9800; color: white;")
         convert_layout.addWidget(self.btn_convert)
         convert_group.setLayout(convert_layout)
@@ -139,9 +215,12 @@ class GenoManagementTab(QWidget):
         self.missing_sample_spin.setSuffix(" (范围: 0.0 - 1.0)")
         qc_layout.addRow("样本最大缺失率:", self.missing_sample_spin)
 
-        self.hwe_check = QCheckBox("启用哈迪-温伯格平衡检验 (p < 1e-6)")
-        self.hwe_check.setChecked(True)
-        qc_layout.addRow(self.hwe_check)
+        self.r2_spin = QDoubleSpinBox()
+        self.r2_spin.setRange(0.0, 1.0)
+        self.r2_spin.setValue(0.8)
+        self.r2_spin.setSingleStep(0.1)
+        self.r2_spin.setSuffix(" (范围: 0.0 - 1.0)")
+        qc_layout.addRow("R² 阈值:", self.r2_spin)
 
         self.btn_run_qc = QPushButton("开始质控")
         self.btn_run_qc.setStyleSheet("background-color: #4CAF50; color: white;")
@@ -175,20 +254,30 @@ class GenoManagementTab(QWidget):
     def create_genetics_group(self):
         genetics_group = QGroupBox("遗传结构分析")
         genetics_layout = QFormLayout()
+        # 主成分数量 (PCA)
         self.pca_components_spin = QDoubleSpinBox()
-        self.pca_components_spin.setRange(1, 10)
+        self.pca_components_spin.setRange(2, 10)
         self.pca_components_spin.setValue(3)
         self.pca_components_spin.setSingleStep(1)
         genetics_layout.addRow("主成分数量 (PCA):", self.pca_components_spin)
-
+        # 亲缘关系矩阵方法
         self.relationship_method = QComboBox()
-        self.relationship_method.addItems(["IBS (身份状态)", "GRM (遗传关系矩阵)"])
+        self.relationship_method.addItems(["IBS", "GRM"])
         genetics_layout.addRow("亲缘关系矩阵方法:", self.relationship_method)
-
+        # SNP 过滤文件选择
+        self.extract_file_edit = QLineEdit()
+        self.extract_file_edit.setPlaceholderText("选择 SNP 过滤文件（可选）")
+        self.extract_file_edit.setReadOnly(True)  # 禁止手动输入
+        self.btn_extract_file = QPushButton("浏览...")
+        self.btn_extract_file.clicked.connect(lambda: self.select_path(self.output_path, mode="file"))
+        extract_file_layout = QHBoxLayout()
+        extract_file_layout.addWidget(self.extract_file_edit)
+        extract_file_layout.addWidget(self.btn_extract_file)
+        genetics_layout.addRow("SNP 过滤文件:", extract_file_layout)
+        # 执行遗传分析按钮
         self.btn_genetic_analysis = QPushButton("执行遗传分析")
         self.btn_genetic_analysis.setStyleSheet("background-color: #8BC34A; color: white;")
         genetics_layout.addWidget(self.btn_genetic_analysis)
-
         genetics_group.setLayout(genetics_layout)
         return genetics_group
 
@@ -243,50 +332,3 @@ class GenoManagementTab(QWidget):
             dialog.exec()
         except Exception as e:
             QMessageBox.critical(self, "错误", str(e))
-
-    # 文件格式转换
-    def convert_format(self):
-        input_file = self.file_path.text()
-        input_file = os.path.splitext(input_file)[0]
-        output_file = self.output_path.text()
-        output_file = os.path.join(output_file, f'{os.path.basename(input_file)}_result')
-
-        # 获取目标格式
-        selected_format = self.target_format.currentText()
-
-        # 根据选择的格式生成plink命令
-        command = [self.plink_path, "--file", input_file]
-
-        if selected_format == "PLINK文本格式 (.ped)":
-            command.extend(["--recode", "--out", output_file])
-        elif selected_format == "PLINK二进制格式 (.bed)":
-            command.extend(["--make-bed", "--out", output_file])
-        elif selected_format == "VCF格式 (.vcf)":
-            command.extend(["--recode", "vcf", "--out", output_file])
-        else:
-            self.log_view.append("未知的格式选择！")
-            return
-
-        # 在日志中输出开始信息
-        self.log_view.append(f"开始转换文件：{input_file} 到 {selected_format} 格式...")
-        self.log_view.append(f"执行命令：{' '.join(command)}")
-
-        try:
-            if input_file is None or output_file is None:
-                QMessageBox.warning("请检查文件是否存在")
-            # 使用subprocess运行plink命令
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            for line in iter(process.stdout.readline, ''):
-                self.log_view.append(line.strip())  # 将plink的输出添加到日志中
-            process.stdout.close()
-            process.wait()
-
-            if process.returncode == 0:
-                self.log_view.append(f"文件转换成功！输出文件：{output_file}")
-            else:
-                self.log_view.append(f"文件转换失败！请检查输入文件和参数配置。")
-                for line in iter(process.stderr.readline, ''):
-                    self.log_view.append(line.strip())
-
-        except Exception as e:
-            self.log_view.append(f"发生错误：{str(e)}")
