@@ -64,7 +64,6 @@ class GWASOperations(QObject):
         except Exception as e:
             self.error_signal.emit(f"GWAS 分析失败: {str(e)}")
 
-
     def plot_manhattan_and_qq(self, result_dir):
         """绘制曼哈顿图和 QQ 图"""
         try:

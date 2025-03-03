@@ -5,12 +5,13 @@ from PyQt6.QtGui import QFileSystemModel, QIcon, QAction, QCloseEvent
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QSplitter,
     QTreeView, QTabWidget, QToolBar,
-    QFileDialog, QStatusBar, QLabel, QHeaderView, QMessageBox
+    QFileDialog, QStatusBar, QHeaderView, QMessageBox
 )
 
 from geno_management_tab import GenoManagementTab
-from phe_management_tab import PhenoManagementTab
+from gs_management_tab import GSTab
 from gwas_management_tab import GWASTab
+from phe_management_tab import PhenoManagementTab
 
 
 class MainWindow(QMainWindow):
@@ -86,7 +87,7 @@ class MainWindow(QMainWindow):
         self.workspace_tabs.addTab(GenoManagementTab(plink_path='../bin/plink.exe'), "基因型数据处理")
         self.workspace_tabs.addTab(PhenoManagementTab(), "表型数据处理")
         self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), "GWAS")
-        self.workspace_tabs.addTab(QLabel("育种值预测"), "GS")
+        self.workspace_tabs.addTab(GSTab(), "GS")
 
     def setup_menubar(self):
         """ 设置菜单栏 """
