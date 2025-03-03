@@ -3,10 +3,9 @@ import os
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QTextEdit, QLineEdit, QDoubleSpinBox, QCheckBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QFileDialog,
+    QTextEdit, QLineEdit, QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QFileDialog,
     QLabel, QGridLayout
 )
-from dask.array import extract
 
 from file_preview_dialog import FilePreviewDialog
 from geno_operations import GenoOperations
@@ -101,7 +100,8 @@ class GenoManagementTab(QWidget):
         pca_components = self.pca_components_spin.value()
         relationship_method = self.relationship_method.currentText()
         extract_file = self.extract_file_edit.text()
-        self.worker.start_genetic_analysis.emit(input_file, output_dir, pca_components, relationship_method,extract_file)
+        self.worker.start_genetic_analysis.emit(input_file, output_dir, pca_components, relationship_method,
+                                                extract_file)
 
     def handle_result(self, result):
         """处理业务逻辑返回的结果"""
@@ -121,7 +121,7 @@ class GenoManagementTab(QWidget):
         file_group = QGroupBox("文件选择")
         file_layout = QVBoxLayout()
 
-        target_file_label = QLabel("目标文件")
+        target_file_label = QLabel("基因型数据")
         target_file_label.setStyleSheet("font-weight: bold;")
         file_layout.addWidget(target_file_label)
 
@@ -136,7 +136,7 @@ class GenoManagementTab(QWidget):
         file_path_layout.addWidget(btn_preview, stretch=1)
         file_layout.addLayout(file_path_layout)
 
-        output_file_label = QLabel("输出文件目录")
+        output_file_label = QLabel("结果输出目录")
         output_file_label.setStyleSheet("font-weight: bold;")
         file_layout.addWidget(output_file_label)
 

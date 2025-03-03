@@ -125,7 +125,7 @@ class PhenoManagementTab(QWidget):
         self.setLayout(main_layout)
 
     def create_file_group(self):
-        file_group = QGroupBox("表型文件选择")
+        file_group = QGroupBox("文件选择")
         file_layout = QVBoxLayout()
 
         # 输入文件路径
@@ -151,7 +151,7 @@ class PhenoManagementTab(QWidget):
 
         output_path_layout = QHBoxLayout()
         self.output_dir = QLineEdit()
-        btn_output = QPushButton("选择结果路径")
+        btn_output = QPushButton("选择输出路径")
         btn_output.clicked.connect(lambda: self.select_path(self.output_dir, "directory"))
         output_path_layout.addWidget(self.output_dir, stretch=3)
         output_path_layout.addWidget(btn_output, stretch=2)

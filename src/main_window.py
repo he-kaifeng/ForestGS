@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 
 from geno_management_tab import GenoManagementTab
 from phe_management_tab import PhenoManagementTab
+from gwas_management_tab import GWASTab
 
 
 class MainWindow(QMainWindow):
@@ -84,7 +85,7 @@ class MainWindow(QMainWindow):
         self.workspace_tabs = QTabWidget()
         self.workspace_tabs.addTab(GenoManagementTab(plink_path='../bin/plink.exe'), "基因型数据处理")
         self.workspace_tabs.addTab(PhenoManagementTab(), "表型数据处理")
-        self.workspace_tabs.addTab(QLabel("基因组选择模型"), "GWAS")
+        self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), "GWAS")
         self.workspace_tabs.addTab(QLabel("育种值预测"), "GS")
 
     def setup_menubar(self):

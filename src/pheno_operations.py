@@ -52,15 +52,15 @@ class PhenoOperations(QObject):
                     elif method == "众数填充" and is_numeric:
                         data[trait] = data[trait].fillna(data[trait].mode()[0])
                     elif method == "前向填充":
-                        data[trait] = data[trait].fillna.ffill()
+                        data[trait] = data[trait].fillna(method="ffill")
                     elif method == "后向填充":
-                        data[trait] = data[trait].fillna.bfill()
+                        data[trait] = data[trait].fillna(method="bfill")
                 else:
                     self.progress_signal.emit(f"性状 {trait} 不是数值型，仅支持前向或后向填充。")
                     continue
             # 保存填充后的数据
-            filled_file_path = os.path.join(out_dir, f'filled_data_{method}.csv')
-            data.to_csv(filled_file_path, index=False, encoding='utf-8')
+            filled_file_path = os.path.join(out_dir, f'filled_data_{method}.txt')
+            data.to_csv(filled_file_path, index=False, encoding='utf-8', sep='\t')
             self.result_signal.emit(data)
             self.progress_signal.emit(f"缺失值填充完成，结果已保存到: {filled_file_path}")
         except Exception as e:
@@ -85,10 +85,10 @@ class PhenoOperations(QObject):
             filtered_data = data[(data[trait] >= lower_bound) & (data[trait] <= upper_bound)]
             outlier_data = data[(data[trait] < lower_bound) | (data[trait] > upper_bound)]
             # 保存过滤后的数据和异常数据
-            filtered_file_path = os.path.join(out_dir, f'filtered_data_{trait}.csv')
-            outlier_file_path = os.path.join(out_dir, f'outlier_data_{trait}.csv')
-            filtered_data.to_csv(filtered_file_path, index=False, encoding='utf-8')
-            outlier_data.to_csv(outlier_file_path, index=False, encoding='utf-8')
+            filtered_file_path = os.path.join(out_dir, f'filtered_data_{trait}.txt')
+            outlier_file_path = os.path.join(out_dir, f'outlier_data_{trait}.txt')
+            filtered_data.to_csv(filtered_file_path, index=False, encoding='utf-8', sep='\t')
+            outlier_data.to_csv(outlier_file_path, index=False, encoding='utf-8', sep='\t')
             # 绘制过滤前后的频率分布图
             plt.figure(figsize=(12, 6))
             # 过滤前的分布
@@ -164,10 +164,10 @@ class PhenoOperations(QObject):
                 self.progress_signal.emit(f"性状 {trait} 的归一化完成，分布图已保存到: {plot_file_path}")
             # 保存归一化后的数据
             if trait == "all":
-                normalized_file_path = os.path.join(out_dir, 'normalized_data_all.csv')
+                normalized_file_path = os.path.join(out_dir, 'normalized_data_all.txt')
             else:
-                normalized_file_path = os.path.join(out_dir, f'normalized_data_{trait}_{method}.csv')
-            data.to_csv(normalized_file_path, index=False, encoding='utf-8')
+                normalized_file_path = os.path.join(out_dir, f'normalized_data_{trait}_{method}.txt')
+            data.to_csv(normalized_file_path, index=False, encoding='utf-8', sep='\t')
             self.progress_signal.emit(f"归一化后的数据已保存到: {normalized_file_path}")
             # 发送最终结果信号
             self.result_signal.emit(data)
@@ -210,8 +210,8 @@ class PhenoOperations(QObject):
             else:
                 raise ValueError(f"未知的转换方向: {direction}")
             # 保存重编码后的数据
-            recoded_file_path = os.path.join(out_dir, f'recoded_data_{trait}.csv')
-            data.to_csv(recoded_file_path, index=False, encoding='utf-8')
+            recoded_file_path = os.path.join(out_dir, f'recoded_data_{trait}.txt')
+            data.to_csv(recoded_file_path, index=False, encoding='utf-8', sep='\t')
             self.progress_signal.emit(f"重编码后的数据已保存到: {recoded_file_path}")
             # 发送结果信号
             self.result_signal.emit(data)
