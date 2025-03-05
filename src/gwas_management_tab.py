@@ -196,7 +196,7 @@ class GWASTab(QWidget):
         self.result_file_path_edit = QLineEdit()
         self.result_file_path_edit.setPlaceholderText("选择结果文件保存路径")
 
-        btn_select_result_path = QPushButton("浏览...")
+        btn_select_result_path = QPushButton("选择输出路径")
         btn_select_result_path.clicked.connect(lambda: self.select_path(self.result_file_path_edit, mode="directory"))
 
         result_file_path_layout.addWidget(self.result_file_path_edit)

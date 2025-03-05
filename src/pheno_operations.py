@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from PyQt6.QtCore import QObject, pyqtSignal
 import seaborn as sns
+from pathlib import Path
 
 
 class PhenoOperations(QObject):
@@ -40,21 +41,20 @@ class PhenoOperations(QObject):
                 missing_data = data[data[trait].isna()]
                 if not missing_data.empty:
                     missing_file_path = os.path.join(out_dir, f'missing_values_{trait}.csv')
-                    missing_data.to_csv(missing_file_path, index=False,
-                                        encoding='utf-8')
+                    missing_data.to_csv(missing_file_path, index=False, encoding='utf-8')
                     self.progress_signal.emit(f"缺失值结果已保存到: {missing_file_path}")
-                # 填充缺失值
-                if method in ["前向填充", "后向填充"] or is_numeric:
-                    if method == "均值填充" and is_numeric:
+
+                if method == "前向填充":
+                    data[trait] = data[trait].fillna(method="ffill")
+                elif method == "后向填充":
+                    data[trait] = data[trait].fillna(method="bfill")
+                elif is_numeric:
+                    if method == "均值填充":
                         data[trait] = data[trait].fillna(data[trait].mean())
-                    elif method == "中位数填充" and is_numeric:
+                    elif method == "中位数填充":
                         data[trait] = data[trait].fillna(data[trait].median())
-                    elif method == "众数填充" and is_numeric:
+                    elif method == "众数填充":
                         data[trait] = data[trait].fillna(data[trait].mode()[0])
-                    elif method == "前向填充":
-                        data[trait] = data[trait].fillna(method="ffill")
-                    elif method == "后向填充":
-                        data[trait] = data[trait].fillna(method="bfill")
                 else:
                     self.progress_signal.emit(f"性状 {trait} 不是数值型，仅支持前向或后向填充。")
                     continue
