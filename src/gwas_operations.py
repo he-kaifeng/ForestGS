@@ -105,7 +105,7 @@ class GWASOperations(QObject):
             plt.axhline(-np.log10(bonferroni_threshold), color='red', linestyle='--', linewidth=1)
             plt.title('Manhattan Plot')
             plt.tight_layout()
-            plt.savefig(os.path.join(result_dir, "manhattan_plot.png"))  # 保存曼哈顿图
+            plt.savefig(os.path.join(result_dir, "manhattan_plot.pdf"))  # 保存曼哈顿图
             # 计算理论分位数和观测分位数
             observed = -np.log10(np.sort(df['P']))
             expected = -np.log10(np.linspace(1 / len(df), 1, len(df)))
@@ -117,7 +117,7 @@ class GWASOperations(QObject):
             plt.ylabel('Observed -log10(p)')
             plt.title('QQ Plot')
             plt.tight_layout()
-            plt.savefig(os.path.join(result_dir, "qq_plot.png"))  # 保存QQ图
+            plt.savefig(os.path.join(result_dir, "qq_plot.pdf"))  # 保存QQ图
             self.progress_signal.emit("曼哈顿图和 QQ 图已生成并保存！")
         except Exception as e:
             self.error_signal.emit(f"绘图失败: {str(e)}")

@@ -4,7 +4,7 @@ from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTextEdit, QLineEdit, QGroupBox, QFormLayout, QFileDialog,
-    QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox
+    QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox, QRadioButton, QGridLayout
 )
 from file_preview_dialog import FilePreviewDialog
 from gs_operations import GSOperations
@@ -49,7 +49,8 @@ class GSTab(QWidget):
             "core_sample_file": self.core_sample_edit.text().strip() if self.core_sample_edit.text().strip() else None,
             "result_dir": self.result_file_path_edit.text().strip(),
             "trait": self.trait_combo.currentText(),
-            "models": [model for model, checked in self.model_checkboxes.items() if checked.isChecked()],
+            "models": next(
+                (model for model, radio_button in self.model_radio_buttons.items() if radio_button.isChecked()), None),
             "threads": self.threads_spin.value(),
             "use_gpu": self.gpu_check.isChecked(),
             "optimization": self.optimization_combo.currentText(),
@@ -65,6 +66,47 @@ class GSTab(QWidget):
         self.log_view.append("数据处理完成，结果已更新")
 
     def init_ui(self):
+        # 设置窗口样式
+        self.setStyleSheet("""
+            QWidget {
+                font-family: "Segoe UI";
+                font-size: 12px;
+            }
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding-top: 15px;
+            }
+            QLineEdit, QComboBox {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            QPushButton {
+                background-color: #2196F3;
+                color: white;
+                padding: 8px;
+                border-radius: 5px;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background-color: #1976D2;
+            }
+            QTextEdit {
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 5px;
+            }
+            QRadioButton {
+                font-size: 12px;
+            }
+            QCheckBox {
+                font-size: 12px;
+            }
+        """)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)
@@ -110,45 +152,70 @@ class GSTab(QWidget):
         return file_group
 
     def create_gs_param_group(self):
-        gs_param_group = QGroupBox("GS参数设置")
-        gs_param_layout = QFormLayout()
+        # 创建 GS 参数设置组
+        gs_param_group = QGroupBox("GS 参数设置")
+        # 主布局
+        gs_param_layout = QVBoxLayout()
         # 性状选择组件
+        trait_layout = QHBoxLayout()
+        trait_label = QLabel("选择性状:")
         self.trait_combo = QComboBox()
         self.trait_combo.setPlaceholderText("请选择性状")
-        gs_param_layout.addRow("选择性状:", self.trait_combo)
-        # 模型选择
-        self.model_checkboxes = {
-            "GBLUP": QCheckBox("GBLUP"),
-            "rrBLUP": QCheckBox("rrBLUP"),
-            "Bayesian": QCheckBox("Bayesian"),
-            "SVR": QCheckBox("SVR"),
-            "RF": QCheckBox("RF"),
-            "LASSO": QCheckBox("LASSO"),
-            "Ridge": QCheckBox("Ridge"),
-            "CatBoost": QCheckBox("CatBoost"),
-            "XGBoost": QCheckBox("XGBoost"),
-            "LightGBM": QCheckBox("LightGBM"),
+        trait_layout.addWidget(trait_label)
+        trait_layout.addWidget(self.trait_combo)
+        gs_param_layout.addLayout(trait_layout)
+        # 模型选择（单选模式）
+        model_group = QGroupBox("选择模型")
+        model_layout = QGridLayout()
+        self.model_radio_buttons = {
+            "GBLUP": QRadioButton("GBLUP"),
+            "rrBLUP": QRadioButton("rrBLUP"),
+            "BayesA": QRadioButton("BayesA"),
+            "SVR": QRadioButton("SVR"),
+            "RF": QRadioButton("RF"),
+            "LASSO": QRadioButton("LASSO"),
+            "CatBoost": QRadioButton("CatBoost"),
+            "XGBoost": QRadioButton("XGBoost"),
+            "LightGBM": QRadioButton("LightGBM"),
         }
-        model_layout = QHBoxLayout()
-        for checkbox in self.model_checkboxes.values():
-            model_layout.addWidget(checkbox)
-        gs_param_layout.addRow("选择模型:", model_layout)
+        # 将模型选项分为两列
+        row, col = 0, 0
+        for radio_button in self.model_radio_buttons.values():
+            model_layout.addWidget(radio_button, row, col)
+            col += 1
+            if col > 1:  # 每行两列
+                col = 0
+                row += 1
+        model_group.setLayout(model_layout)
+        gs_param_layout.addWidget(model_group)
         # 线程数
+        threads_layout = QHBoxLayout()
+        threads_label = QLabel("线程数:")
         self.threads_spin = QSpinBox()
-        self.threads_spin.setRange(1, 64)
+        self.threads_spin.setRange(1, 16)
         self.threads_spin.setValue(4)
-        gs_param_layout.addRow("线程数:", self.threads_spin)
-        # 使用GPU
-        self.gpu_check = QCheckBox("使用GPU加速")
+        threads_layout.addWidget(threads_label)
+        threads_layout.addWidget(self.threads_spin)
+        gs_param_layout.addLayout(threads_layout)
+        # 使用 GPU
+        self.gpu_check = QCheckBox("使用 GPU 加速")
         gs_param_layout.addWidget(self.gpu_check)
         # 优化算法
+        optimization_layout = QHBoxLayout()
+        optimization_label = QLabel("优化算法:")
         self.optimization_combo = QComboBox()
         self.optimization_combo.addItems(["网格搜索", "随机搜索", "贝叶斯优化"])
-        gs_param_layout.addRow("优化算法:", self.optimization_combo)
+        optimization_layout.addWidget(optimization_label)
+        optimization_layout.addWidget(self.optimization_combo)
+        gs_param_layout.addLayout(optimization_layout)
         # 开始分析按钮
         self.btn_run_gs = QPushButton("开始全基因组育种分析")
-        self.btn_run_gs.setStyleSheet("background-color: #2196F3; color: white;")
+        self.btn_run_gs.setStyleSheet(
+            "QPushButton { background-color: #4CAF50; color: white; padding: 10px; font-size: 14px; border-radius: 5px; }"
+            "QPushButton:hover { background-color: #45a049; }"
+        )
         gs_param_layout.addWidget(self.btn_run_gs)
+        # 设置主布局
         gs_param_group.setLayout(gs_param_layout)
         return gs_param_group
 
@@ -200,6 +267,8 @@ class GSTab(QWidget):
     def load_traits(self, label_text, line_edit):
         self.select_path(line_edit, mode="file")
         file_path = line_edit.text()
+        if file_path is None or file_path == '':
+            return
         if label_text == '表型数据文件:':
             try:
                 # 文件格式自动识别

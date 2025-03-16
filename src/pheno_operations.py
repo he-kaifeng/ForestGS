@@ -1,9 +1,9 @@
 import os
+
 import matplotlib.pyplot as plt
 import pandas as pd
-from PyQt6.QtCore import QObject, pyqtSignal
 import seaborn as sns
-from pathlib import Path
+from PyQt6.QtCore import QObject, pyqtSignal
 
 
 class PhenoOperations(QObject):
@@ -104,7 +104,7 @@ class PhenoOperations(QObject):
             plt.xlabel(trait)
             plt.ylabel('Frequency')
             # 保存分布图
-            plot_file_path = os.path.join(out_dir, f'frequency_distribution_{trait}.png')
+            plot_file_path = os.path.join(out_dir, f'frequency_distribution_{trait}.pdf')
             plt.tight_layout()
             plt.savefig(plot_file_path, dpi=300)
             plt.close()
@@ -157,7 +157,7 @@ class PhenoOperations(QObject):
                 plt.ylabel('Phenotype Value')
                 plt.xlabel('Group')
                 # 保存分布图
-                plot_file_path = os.path.join(out_dir, f'distribution_{trait}_{method}.png')
+                plot_file_path = os.path.join(out_dir, f'distribution_{trait}_{method}.pdf')
                 plt.tight_layout()
                 plt.savefig(plot_file_path, dpi=300)
                 plt.close()

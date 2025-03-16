@@ -1,12 +1,10 @@
 import os
-
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QTextEdit, QLineEdit, QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QFileDialog,
     QLabel, QGridLayout
 )
-
 from file_preview_dialog import FilePreviewDialog
 from geno_operations import GenoOperations
 
@@ -28,6 +26,45 @@ class GenoManagementTab(QWidget):
         self.thread.start()
 
     def init_ui(self):
+        # 设置窗口样式
+        self.setStyleSheet("""
+            QWidget {
+                font-family: "Segoe UI";
+                font-size: 12px;
+            }
+            QGroupBox {
+                font-size: 14px;
+                font-weight: bold;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding-top: 15px;
+            }
+            QLineEdit, QComboBox {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            QPushButton {
+                background-color: #2196F3;
+                color: white;
+                padding: 8px;
+                border-radius: 5px;
+                font-size: 12px;
+            }
+            QPushButton:hover {
+                background-color: #1976D2;
+            }
+            QTextEdit {
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                padding: 5px;
+            }
+            QLabel {
+                font-size: 12px;
+            }
+        """)
+
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)

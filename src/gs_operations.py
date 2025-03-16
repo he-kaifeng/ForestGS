@@ -1,13 +1,19 @@
 import os
-from PyQt6.QtCore import QObject, pyqtSignal
+import time
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import Ridge
-from sklearn.metrics import mean_squared_error, r2_score
-import matplotlib.pyplot as plt
 import seaborn as sns
-import time
+from PyQt6.QtCore import QObject, pyqtSignal
+from catboost import CatBoostRegressor
+from lightgbm import LGBMRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import Ridge, Lasso, BayesianRidge
+from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVR
+from xgboost import XGBRegressor
 
 
 class GSOperations(QObject):
@@ -31,7 +37,9 @@ class GSOperations(QObject):
             phenotypic_data = self.generate_phenotypic_data(gs_args["pheno_file"], ids, gs_args["trait"])
             self.progress_signal.emit("表型数据读取完成")
             # 进行基因组选择并计算 GEBV
-            gebv_df, metrics = self.genomic_selection(genotypes, phenotypic_data, ids)
+            gebv_df, metrics = self.genomic_selections(genotypes, phenotypic_data, ids, gs_args["models"],
+                                                       gs_args["threads"], gs_args["use_gpu"],
+                                                       gs_args["optimization"])
             self.progress_signal.emit("基因组选择完成")
             # 保存结果
             result_file = os.path.join(gs_args["result_dir"], "gs_results.csv")
@@ -99,7 +107,6 @@ class GSOperations(QObject):
             raise ValueError(f"读取 PLINK 文件时发生错误: {str(e)}")
 
     def generate_phenotypic_data(self, phenotype_file, sample_ids, trait):
-        """从表型数据文件中读取指定样本的表型数据"""
         try:
             phenotype_df = pd.read_csv(phenotype_file, sep="\t")
             phenotype_df["FID_IID"] = phenotype_df["FID"].astype(str) + "_" + phenotype_df["IID"].astype(str)
@@ -110,25 +117,48 @@ class GSOperations(QObject):
         except Exception as e:
             raise ValueError(f"读取表型数据时发生错误: {str(e)}")
 
-    def genomic_selection(self, genotypes, phenotypic_data, sample_ids):
-        """实现基因组选择并计算 GEBV"""
+    def genomic_selections(self, genotypes, phenotypic_data, sample_ids, model, threads, use_gpu, optimization):
         try:
             # 数据分割
             X_train, X_test, y_train, y_test = train_test_split(genotypes, phenotypic_data, test_size=0.2,
                                                                 random_state=42)
+            if model == "BayesA":
+                model_instance = BayesianRidge()
+            elif model == "rrBLUP":
+                model_instance = Ridge(alpha=1.0)
+            elif model == "LASSO":
+                model_instance = Lasso(alpha=0.01)
+            elif model == "SVR":
+                model_instance = SVR(kernel="linear")
+            elif model == "RF":
+                model_instance = RandomForestRegressor(n_estimators=100, n_jobs=threads)
+            elif model == "CatBoost":
+                model_instance = CatBoostRegressor(thread_count=threads, task_type="GPU" if use_gpu else "CPU",
+                                                   verbose=0)
+            elif model == "XGBoost":
+                model_instance = XGBRegressor(n_jobs=threads, tree_method="gpu_hist" if use_gpu else "auto")
+            elif model == "LightGBM":
+                model_instance = LGBMRegressor(n_jobs=threads, device="gpu" if use_gpu else "cpu")
+            else:
+                raise ValueError(f"不支持的模型: {model}")
+
+            # 根据优化算法调整模型参数
+            # todo
             # 模型训练
-            model = Ridge(alpha=1.0)
             start_time = time.time()
-            model.fit(X_train, y_train)
+            model_instance.fit(X_train, y_train)
             training_time = time.time() - start_time
+
             # 计算 GEBV
             start_time = time.time()
-            gebv = model.predict(genotypes)
+            gebv = model_instance.predict(X_test)
             prediction_time = time.time() - start_time
+
             # 将 GEBV 与样本 ID 结合
             gebv_df = pd.DataFrame({"IID": sample_ids, "GEBV": gebv})
+
             # 评估模型性能
-            y_pred = model.predict(X_test)
+            y_pred = model_instance.predict(X_test)
             metrics = {
                 "PCC": np.corrcoef(y_test, y_pred)[0, 1],
                 "R²": r2_score(y_test, y_pred),
@@ -139,6 +169,7 @@ class GSOperations(QObject):
                 "y_test": y_test,
                 "y_pred": y_pred,
             }
+
             return gebv_df, metrics
         except Exception as e:
             raise ValueError(f"基因组选择时发生错误: {str(e)}")
@@ -153,7 +184,7 @@ class GSOperations(QObject):
             sns.boxplot(data=[y_test, y_pred], palette="Set2")
             plt.xticks([0, 1], ['Actual Values', 'Predicted Values'])
             plt.title('Boxplot of Actual vs Predicted Values')
-            plt.savefig(os.path.join(save_dir, "boxplot.png"), dpi=300, bbox_inches="tight")
+            plt.savefig(os.path.join(save_dir, "boxplot.pdf"), dpi=300, bbox_inches="tight")
             plt.close()
 
             # 2. 散点图
@@ -163,7 +194,7 @@ class GSOperations(QObject):
             plt.title('Scatter Plot of Actual vs Predicted Values')
             plt.xlabel('Actual Values')
             plt.ylabel('Predicted Values')
-            plt.savefig(os.path.join(save_dir, "scatter_plot.png"), dpi=300, bbox_inches="tight")
+            plt.savefig(os.path.join(save_dir, "scatter_plot.pdf"), dpi=300, bbox_inches="tight")
             plt.close()
 
             # 3. 频率分布图
@@ -172,7 +203,7 @@ class GSOperations(QObject):
             sns.histplot(y_pred, color='orange', label='Predicted Values', kde=True)
             plt.title('Distribution of Actual vs Predicted Values')
             plt.legend()
-            plt.savefig(os.path.join(save_dir, "distribution_plot.png"), dpi=300, bbox_inches="tight")
+            plt.savefig(os.path.join(save_dir, "distribution_plot.pdf"), dpi=300, bbox_inches="tight")
             plt.close()
 
             # 发送进度信号
