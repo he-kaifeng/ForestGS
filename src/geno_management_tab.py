@@ -255,7 +255,7 @@ class GenoManagementTab(QWidget):
         self.r2_spin.setSingleStep(0.1)
         qc_layout.addRow("R² 阈值:", self.r2_spin)
 
-        self.btn_run_qc = QPushButton("开始质控")
+        self.btn_run_qc = QPushButton("执行质控")
         self.btn_run_qc.setStyleSheet("background-color: #4CAF50; color: white;")
         qc_layout.addWidget(self.btn_run_qc)
 

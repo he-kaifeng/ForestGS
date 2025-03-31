@@ -114,7 +114,7 @@ class GWASTab(QWidget):
         }
 
         self.log_view.clear()
-        self.log_view.append("开始 GWAS 分析...")
+        self.log_view.append("执行 GWAS 分析...")
         self.worker.start_gwas.emit(gwas_args)
 
     def handle_result(self, result):
@@ -223,8 +223,8 @@ class GWASTab(QWidget):
         self.logp_marker_check = QCheckBox("使用-logp排序后的显著性标记")
         gwas_param_layout.addWidget(self.logp_marker_check)
 
-        # 开始分析按钮
-        self.btn_run_gwas = QPushButton("开始全基因组关联分析")
+        # 执行分析按钮
+        self.btn_run_gwas = QPushButton("执行全基因组关联分析")
         self.btn_run_gwas.setStyleSheet("background-color: #2196F3; color: white;")
         gwas_param_layout.addWidget(self.btn_run_gwas)
 

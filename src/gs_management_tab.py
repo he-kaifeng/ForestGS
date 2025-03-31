@@ -131,6 +131,7 @@ class GSTab(QWidget):
         self.pheno_file_edit = QLineEdit()
         self.geno_file_edit = QLineEdit()
         self.core_sample_edit = QLineEdit()
+        self.train_model_file_edit = QLineEdit()
 
         # 为每个文件选择创建布局
         def add_file_selector(label_text, line_edit):
@@ -145,18 +146,19 @@ class GSTab(QWidget):
             file_layout.addRow(QLabel(label_text), file_path_layout)
 
         # 添加不同的文件选择器
-        add_file_selector("表型数据文件:", self.pheno_file_edit)
-        add_file_selector("基因型数据文件:", self.geno_file_edit)
+        add_file_selector("训练表型数据文件:", self.pheno_file_edit)
+        add_file_selector("训练基因型数据文件:", self.geno_file_edit)
         add_file_selector("核心样本ID文件 (可选):", self.core_sample_edit)
+        add_file_selector("预测基因型文件:", self.train_model_file_edit)
         file_group.setLayout(file_layout)
         return file_group
 
     def create_gs_param_group(self):
-        # 创建 GS 参数设置组
+
         gs_param_group = QGroupBox("GS 参数设置")
-        # 主布局
+
         gs_param_layout = QVBoxLayout()
-        # 性状选择组件
+
         trait_layout = QHBoxLayout()
         trait_label = QLabel("选择性状:")
         self.trait_combo = QComboBox()
@@ -164,7 +166,7 @@ class GSTab(QWidget):
         trait_layout.addWidget(trait_label)
         trait_layout.addWidget(self.trait_combo)
         gs_param_layout.addLayout(trait_layout)
-        # 模型选择（单选模式）
+
         model_group = QGroupBox("选择模型")
         model_layout = QGridLayout()
         self.model_radio_buttons = {
@@ -178,7 +180,7 @@ class GSTab(QWidget):
             "XGBoost": QRadioButton("XGBoost"),
             "LightGBM": QRadioButton("LightGBM"),
         }
-        # 将模型选项分为两列
+
         row, col = 0, 0
         for radio_button in self.model_radio_buttons.values():
             model_layout.addWidget(radio_button, row, col)
@@ -197,10 +199,10 @@ class GSTab(QWidget):
         threads_layout.addWidget(threads_label)
         threads_layout.addWidget(self.threads_spin)
         gs_param_layout.addLayout(threads_layout)
-        # 使用 GPU
+
         self.gpu_check = QCheckBox("使用 GPU 加速")
         gs_param_layout.addWidget(self.gpu_check)
-        # 优化算法
+
         optimization_layout = QHBoxLayout()
         optimization_label = QLabel("优化算法:")
         self.optimization_combo = QComboBox()
@@ -208,8 +210,8 @@ class GSTab(QWidget):
         optimization_layout.addWidget(optimization_label)
         optimization_layout.addWidget(self.optimization_combo)
         gs_param_layout.addLayout(optimization_layout)
-        # 开始分析按钮
-        self.btn_run_gs = QPushButton("开始全基因组育种分析")
+
+        self.btn_run_gs = QPushButton("执行基因型选择")
         self.btn_run_gs.setStyleSheet(
             "QPushButton { background-color: #4CAF50; color: white; padding: 10px; font-size: 14px; border-radius: 5px; }"
             "QPushButton:hover { background-color: #45a049; }"
