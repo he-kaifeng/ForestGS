@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from PyQt6.QtCore import QObject, pyqtSignal
+
 from catboost import CatBoostRegressor
 from lightgbm import LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor
@@ -49,7 +50,7 @@ class GSOperations(QObject):
             result_str = f"基因组选择结果:\n{gebv_df.head()}\n\n性能指标:\n{metrics}"
             self.result_signal.emit(result_str)
             # 可视化结果
-            self.visualize_results(metrics["y_test"], metrics["y_pred"], gs_args["result_dir"])
+            self.visualize_results(metrics["y_test"], metrics["y_pred"], metrics, gs_args["result_dir"])
         except Exception as e:
             self.error_signal.emit(f"发生错误: {str(e)}")
 
@@ -59,13 +60,17 @@ class GSOperations(QObject):
             return None
         try:
             core_samples = pd.read_csv(sample_file, sep="\s+", header=None)
+
             if core_samples.shape[1] == 1:
                 core_samples.columns = ["FID_IID"]
+
             elif core_samples.shape[1] == 2:
                 core_samples.columns = ["FID", "IID"]
                 core_samples["FID_IID"] = core_samples["FID"].astype(str) + "_" + core_samples["IID"].astype(str)
+
             else:
                 raise ValueError("core_sample_file 文件格式不正确，应为 1 列（FID_IID）或 2 列（FID 和 IID）")
+
             return core_samples["FID_IID"]
         except Exception as e:
             raise ValueError(f"读取核心样本文件时发生错误: {str(e)}")
@@ -122,68 +127,65 @@ class GSOperations(QObject):
             # 数据分割
             X_train, X_test, y_train, y_test = train_test_split(genotypes, phenotypic_data, test_size=0.2,
                                                                 random_state=42)
-            if model == "BayesA":
-                model_instance = BayesianRidge()
-            elif model == "rrBLUP":
-                model_instance = Ridge(alpha=1.0)
-            elif model == "LASSO":
-                model_instance = Lasso(alpha=0.01)
-            elif model == "SVR":
-                model_instance = SVR(kernel="linear")
-            elif model == "RF":
-                model_instance = RandomForestRegressor(n_estimators=100, n_jobs=threads)
-            elif model == "CatBoost":
-                model_instance = CatBoostRegressor(thread_count=threads, task_type="GPU" if use_gpu else "CPU",
-                                                   verbose=0)
-            elif model == "XGBoost":
-                model_instance = XGBRegressor(n_jobs=threads, tree_method="gpu_hist" if use_gpu else "auto")
-            elif model == "LightGBM":
-                model_instance = LGBMRegressor(n_jobs=threads, device="gpu" if use_gpu else "cpu")
-            else:
+            # 模型选择
+            models = {
+                "BayesA": BayesianRidge(),
+                "rrBLUP": Ridge(alpha=1.0),
+                "LASSO": Lasso(alpha=0.01),
+                "SVR": SVR(kernel="linear"),
+                "RF": RandomForestRegressor(n_estimators=100, n_jobs=threads),
+                "CatBoost": CatBoostRegressor(thread_count=threads, task_type="GPU" if use_gpu else "CPU", verbose=0),
+                "XGBoost": XGBRegressor(n_jobs=threads, tree_method="gpu_hist" if use_gpu else "auto"),
+                "LightGBM": LGBMRegressor(n_jobs=threads, device="gpu" if use_gpu else "cpu"),
+            }
+
+            model_instance = models.get(model)
+            if model_instance is None:
                 raise ValueError(f"不支持的模型: {model}")
 
-            # 根据优化算法调整模型参数
-            # todo
             # 模型训练
             start_time = time.time()
             model_instance.fit(X_train, y_train)
             training_time = time.time() - start_time
 
-            # 计算 GEBV
+            # 预测与评估
             start_time = time.time()
-            gebv = model_instance.predict(X_test)
+            gebv = model_instance.predict(genotypes)
             prediction_time = time.time() - start_time
 
             # 将 GEBV 与样本 ID 结合
             gebv_df = pd.DataFrame({"IID": sample_ids, "GEBV": gebv})
 
-            # 评估模型性能
-            y_pred = model_instance.predict(X_test)
             metrics = {
-                "PCC": np.corrcoef(y_test, y_pred)[0, 1],
-                "R²": r2_score(y_test, y_pred),
-                "MSE": mean_squared_error(y_test, y_pred),
-                "RMSE": np.sqrt(mean_squared_error(y_test, y_pred)),
+                "PCC": np.corrcoef(phenotypic_data, gebv)[0, 1],
+                "R²": r2_score(phenotypic_data, gebv),
+                "MSE": mean_squared_error(phenotypic_data, gebv),
+                "RMSE": np.sqrt(mean_squared_error(phenotypic_data, gebv)),
                 "Training Time": training_time,
                 "Prediction Time": prediction_time,
-                "y_test": y_test,
-                "y_pred": y_pred,
+                "y_test": phenotypic_data,
+                "y_pred": gebv,
             }
 
             return gebv_df, metrics
         except Exception as e:
             raise ValueError(f"基因组选择时发生错误: {str(e)}")
 
-    def visualize_results(self, y_test, y_pred, save_dir="results"):
+    def visualize_results(self, y_test, y_pred, metrics, save_dir="results"):
         try:
             # 确保保存目录存在
             os.makedirs(save_dir, exist_ok=True)
+
+            # 提取关键性能指标
+            r2 = metrics["R²"]
+            pcc = metrics["PCC"]
+            rmse = metrics["RMSE"]
 
             # 1. 箱线图
             plt.figure(figsize=(6, 6))
             sns.boxplot(data=[y_test, y_pred], palette="Set2")
             plt.xticks([0, 1], ['Actual Values', 'Predicted Values'])
-            plt.title('Boxplot of Actual vs Predicted Values')
+            plt.title(f'Boxplot of Actual vs Predicted Values\nR²={r2:.3f}, PCC={pcc:.3f}, RMSE={rmse:.3f}')
             plt.savefig(os.path.join(save_dir, "boxplot.pdf"), dpi=300, bbox_inches="tight")
             plt.close()
 
@@ -191,7 +193,7 @@ class GSOperations(QObject):
             plt.figure(figsize=(6, 6))
             plt.scatter(y_test, y_pred, alpha=0.5)
             plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
-            plt.title('Scatter Plot of Actual vs Predicted Values')
+            plt.title(f'Scatter Plot of Actual vs Predicted Values\nR²={r2:.3f}, PCC={pcc:.3f}, RMSE={rmse:.3f}')
             plt.xlabel('Actual Values')
             plt.ylabel('Predicted Values')
             plt.savefig(os.path.join(save_dir, "scatter_plot.pdf"), dpi=300, bbox_inches="tight")
@@ -201,7 +203,7 @@ class GSOperations(QObject):
             plt.figure(figsize=(6, 6))
             sns.histplot(y_test, color='blue', label='Actual Values', kde=True)
             sns.histplot(y_pred, color='orange', label='Predicted Values', kde=True)
-            plt.title('Distribution of Actual vs Predicted Values')
+            plt.title(f'Distribution of Actual vs Predicted Values\nR²={r2:.3f}, PCC={pcc:.3f}, RMSE={rmse:.3f}')
             plt.legend()
             plt.savefig(os.path.join(save_dir, "distribution_plot.pdf"), dpi=300, bbox_inches="tight")
             plt.close()

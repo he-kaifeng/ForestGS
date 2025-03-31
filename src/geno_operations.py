@@ -313,7 +313,7 @@ class GenoOperations(QObject):
         """筛选VCF文件"""
         try:
             # 构建PLINK命令
-            cmd = [self.plink_path, "--vcf", input_file, "--out", output_file]
+            cmd = [self.plink_path, "--vcf", input_file, "--make-bed", "--const-fid", "--out", output_file]
             # 添加样本筛选参数
             self._run_plink_with_filters(cmd, output_file, filter_sample, exclude_sample, filter_snp, exclude_snp)
         except subprocess.CalledProcessError as e:
@@ -325,7 +325,7 @@ class GenoOperations(QObject):
             # 获取BED文件前缀
             input_prefix = os.path.splitext(input_file)[0]
             # 构建PLINK命令
-            cmd = [self.plink_path, "--bfile", input_prefix, "--out", output_file]
+            cmd = [self.plink_path, "--bfile", input_prefix, "--make-bed", "--out", output_file]
             # 添加样本筛选参数
             self._run_plink_with_filters(cmd, output_file, filter_sample, exclude_sample, filter_snp, exclude_snp)
         except subprocess.CalledProcessError as e:
@@ -337,7 +337,7 @@ class GenoOperations(QObject):
             # 获取PED文件前缀
             input_prefix = os.path.splitext(input_file)[0]
             # 构建PLINK命令
-            cmd = [self.plink_path, "--file", input_prefix, "--out", output_file]
+            cmd = [self.plink_path, "--file", input_prefix, "--make-bed", "--out", output_file]
             # 添加样本筛选参数
             self._run_plink_with_filters(cmd, output_file, filter_sample, exclude_sample, filter_snp, exclude_snp)
         except subprocess.CalledProcessError as e:

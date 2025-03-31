@@ -235,28 +235,24 @@ class GenoManagementTab(QWidget):
         self.maf_spin.setRange(0.0, 0.5)
         self.maf_spin.setValue(0.05)
         self.maf_spin.setSingleStep(0.01)
-        self.maf_spin.setSuffix(" (范围: 0.0 - 0.5)")
         qc_layout.addRow("最小等位基因频率:", self.maf_spin)
 
         self.missing_geno_spin = QDoubleSpinBox()
         self.missing_geno_spin.setRange(0.0, 1.0)
         self.missing_geno_spin.setValue(0.1)
         self.missing_geno_spin.setSingleStep(0.05)
-        self.missing_geno_spin.setSuffix(" (范围: 0.0 - 1.0)")
         qc_layout.addRow("SNP最大缺失率:", self.missing_geno_spin)
 
         self.missing_sample_spin = QDoubleSpinBox()
         self.missing_sample_spin.setRange(0.0, 1.0)
         self.missing_sample_spin.setValue(0.1)
         self.missing_sample_spin.setSingleStep(0.05)
-        self.missing_sample_spin.setSuffix(" (范围: 0.0 - 1.0)")
         qc_layout.addRow("样本最大缺失率:", self.missing_sample_spin)
 
         self.r2_spin = QDoubleSpinBox()
         self.r2_spin.setRange(0.0, 1.0)
         self.r2_spin.setValue(0.8)
         self.r2_spin.setSingleStep(0.1)
-        self.r2_spin.setSuffix(" (范围: 0.0 - 1.0)")
         qc_layout.addRow("R² 阈值:", self.r2_spin)
 
         self.btn_run_qc = QPushButton("开始质控")

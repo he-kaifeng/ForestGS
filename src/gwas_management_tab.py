@@ -285,15 +285,19 @@ class GWASTab(QWidget):
             QMessageBox.critical(self, "错误", str(e))
 
     def load_traits(self, label_text, line_edit):
-        """加载表型数据"""
         self.select_path(line_edit, mode="file")
         file_path = line_edit.text()
+        if file_path is None or file_path == '':
+            return
         if label_text == '表型数据文件:':
             try:
+                # 文件格式自动识别
                 if file_path.endswith('.txt'):
                     self.phenotype_data = pd.read_csv(file_path, sep='\t')
+                elif file_path.endswith('.csv'):
+                    self.phenotype_data = pd.read_csv(file_path)
                 else:
-                    raise ValueError("仅支持制表符分隔的txt文件")
+                    raise ValueError("仅支持制表符分隔的txt文件或csv文件")
                 self.columns = self.phenotype_data.columns.tolist()
                 if self.columns[0] == 'FID' and self.columns[1] == 'IID':
                     self.trait_combo.clear()
@@ -302,7 +306,7 @@ class GWASTab(QWidget):
                     line_edit.clear()
                     QMessageBox.critical(self, "数据加载错误",
                                          f"无法加载表型数据：\n"
-                                         f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
+                                         f"请确保：\n1. 文件格式正确\n仅支持制表符分隔的txt文件或csv文件\n2. 包含表头行\n")
             except Exception as e:
                 line_edit.clear()
                 QMessageBox.critical(self, "数据加载错误",

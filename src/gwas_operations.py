@@ -84,13 +84,14 @@ class GWASOperations(QObject):
             x_offset = 0
             x = []
             chr_pos = {}  # 记录染色体起始和结束位置
+            chr_width = 100  # 每个染色体的固定宽度
             for chr in chromosomes:
                 chr_data = df[df['CHR'] == chr]
                 num_snps = len(chr_data)
-                x_pos = np.arange(num_snps) + x_offset
+                x_pos = np.linspace(x_offset, x_offset + chr_width, num_snps, endpoint=False)
                 x.extend(x_pos)
-                chr_pos[chr] = (x_offset, x_offset + num_snps)
-                x_offset += num_snps + 10  # 染色体间留空10个单位
+                chr_pos[chr] = (x_offset, x_offset + chr_width)
+                x_offset += chr_width + 10  # 染色体间留空10个单位
             # 绘制曼哈顿图
             plt.figure(figsize=(14, 6))
             plt.scatter(x, df['minus_log10p'], c=df['color'], s=5, alpha=0.7)
