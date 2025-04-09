@@ -29,7 +29,6 @@ class GSTab(QWidget):
         self.btn_run_gs.clicked.connect(self.run_gs)
 
     def run_gs(self):
-        """执行 GS 分析"""
         # 检查必要文件是否已选择
         if not self.pheno_file_edit.text().strip() or not self.geno_file_edit.text().strip():
             QMessageBox.critical(self, "错误", "表型数据和基因型数据文件必须选择！")
@@ -46,6 +45,7 @@ class GSTab(QWidget):
         gs_args = {
             "pheno_file": self.pheno_file_edit.text().strip(),
             "geno_file": self.geno_file_edit.text().strip(),
+            "train_file": self.train_model_file_edit.text().strip(),
             "core_sample_file": self.core_sample_edit.text().strip() if self.core_sample_edit.text().strip() else None,
             "result_dir": self.result_file_path_edit.text().strip(),
             "trait": self.trait_combo.currentText(),
@@ -171,7 +171,7 @@ class GSTab(QWidget):
         model_layout = QGridLayout()
         self.model_radio_buttons = {
             "GBLUP": QRadioButton("GBLUP"),
-            "rrBLUP": QRadioButton("rrBLUP"),
+            "rrBLUP": QRadioButton("rrBLUP(Ridge)"),
             "BayesA": QRadioButton("BayesA"),
             "SVR": QRadioButton("SVR"),
             "RF": QRadioButton("RF"),

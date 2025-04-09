@@ -86,8 +86,9 @@ class MainWindow(QMainWindow):
         self.workspace_tabs = QTabWidget()
         self.workspace_tabs.addTab(GenoManagementTab(plink_path='../bin/plink.exe'), "基因型数据处理")
         self.workspace_tabs.addTab(PhenoManagementTab(), "表型数据处理")
-        self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), "GWAS")
-        self.workspace_tabs.addTab(GSTab(), "GS")
+        self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), "全基因型关联分析")
+        self.workspace_tabs.addTab(GSTab(), "基因型选择")
+
 
     def setup_menubar(self):
         """ 设置菜单栏 """
