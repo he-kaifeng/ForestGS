@@ -1,16 +1,17 @@
 import os
+
 import pandas as pd
 from PyQt6.QtCore import Qt, QThread
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QTextEdit, QLineEdit, QDoubleSpinBox, QGroupBox, QFormLayout, QFileDialog,
-    QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
+    QLineEdit, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
 )
-from file_preview_dialog import FilePreviewDialog
+
+from common_tab import CommonTab
 from pheno_operations import PhenoOperations
 
 
-class PhenoManagementTab(QWidget):
+class PhenoManagementTab(CommonTab):
     def __init__(self):
         super().__init__()
         self.init_ui()
@@ -312,45 +313,6 @@ class PhenoManagementTab(QWidget):
         """切换转化表文件控件的可见性"""
         is_num2word = "num2word" in self.recoding_direction.currentText()
         self.mapping_file_widget.setVisible(is_num2word)
-
-    def create_log_group(self):
-        """创建运行日志组"""
-        log_group = QGroupBox("运行日志")
-        log_layout = QVBoxLayout()
-        self.log_view = QTextEdit()
-        self.log_view.setReadOnly(True)
-        log_layout.addWidget(self.log_view)
-        log_group.setLayout(log_layout)
-        return log_group
-
-    def select_path(self, line_edit, mode="file"):
-        """通用路径选择方法"""
-        try:
-            if mode == "file":
-                path, _ = QFileDialog.getOpenFileName(self, "选择文件")
-            elif mode == "directory":
-                path = QFileDialog.getExistingDirectory(self, "选择输出目录")
-            else:
-                raise ValueError("Invalid mode. Use 'file' or 'directory'.")
-            if path:
-                line_edit.setText(path)
-        except Exception as e:
-            QMessageBox.critical(self, "错误", f"选择路径时发生错误: {e}")
-
-    def preview_file(self):
-        """文件预览功能"""
-        file_path = self.file_path.text()
-        if not file_path or not os.path.isfile(file_path):
-            QMessageBox.warning(self, "错误", "无效的文件路径！")
-            return
-        try:
-            if not os.access(file_path, os.R_OK):
-                QMessageBox.warning(self, "错误", "无法读取文件，请检查文件权限！")
-                return
-            dialog = FilePreviewDialog(file_path, self)
-            dialog.exec()
-        except Exception as e:
-            QMessageBox.critical(self, "错误", f"预览文件时发生错误: {e}")
 
     def validate_input(self):
         """验证输入合法性"""

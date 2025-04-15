@@ -1,0 +1,42 @@
+{
+  "curated_models": [
+    {
+      "specie": "杨树",
+      "populations": [
+        {
+          "population": "a",
+          "paper": "aaa",
+          "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
+          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
+          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+        },
+        {
+          "population": "b",
+          "paper": "bbb",
+          "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
+          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
+          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+        }
+      ]
+    },
+    {
+      "specie": "柳树",
+      "populations": [
+        {
+          "population": "c",
+          "paper": "ccc",
+          "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
+          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
+          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+        },
+        {
+          "population": "d",
+          "paper": "ddd",
+          "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
+          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
+          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+        }
+      ]
+    }
+  ]
+}

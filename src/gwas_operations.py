@@ -1,9 +1,9 @@
+import os
+import subprocess
+
 import numpy as np
 import pandas as pd
-from PyQt6.QtCore import QObject, pyqtSignal, QFileInfo
-import subprocess
-import os
-
+from PyQt6.QtCore import QObject, pyqtSignal
 from matplotlib import pyplot as plt
 
 

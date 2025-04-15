@@ -12,6 +12,7 @@ from geno_management_tab import GenoManagementTab
 from gs_management_tab import GSTab
 from gwas_management_tab import GWASTab
 from phe_management_tab import PhenoManagementTab
+from gs_with_data_management_tab import GSWithDataTab
 
 
 class MainWindow(QMainWindow):
@@ -87,8 +88,8 @@ class MainWindow(QMainWindow):
         self.workspace_tabs.addTab(GenoManagementTab(plink_path='../bin/plink.exe'), "基因型数据处理")
         self.workspace_tabs.addTab(PhenoManagementTab(), "表型数据处理")
         self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), "全基因型关联分析")
-        self.workspace_tabs.addTab(GSTab(), "基因型选择")
-
+        self.workspace_tabs.addTab(GSWithDataTab(config_file='../config/curated_models.json'), "表型预测")
+        self.workspace_tabs.addTab(GSTab(), "用户模型训练")
 
     def setup_menubar(self):
         """ 设置菜单栏 """

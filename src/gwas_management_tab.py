@@ -1,16 +1,15 @@
-import os
 import pandas as pd
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QTextEdit, QLineEdit, QGroupBox, QFormLayout, QFileDialog,
-    QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox
+    QVBoxLayout, QHBoxLayout, QPushButton,
+    QLineEdit, QGroupBox, QFormLayout, QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox
 )
-from file_preview_dialog import FilePreviewDialog
+
+from common_tab import CommonTab
 from gwas_operations import GWASOperations
 
 
-class GWASTab(QWidget):
+class GWASTab(CommonTab):
     def __init__(self, plink_path):
         super().__init__()
         self.plink_path = plink_path
@@ -169,34 +168,6 @@ class GWASTab(QWidget):
         file_group.setLayout(file_layout)
         return file_group
 
-    def load_traits(self, label_text, line_edit):
-        self.select_path(line_edit, mode="file")
-        file_path = line_edit.text()
-        if label_text == '表型数据文件:':
-            try:
-                # 文件格式自动识别
-                if file_path.endswith('.txt'):
-                    self.phenotype_data = pd.read_csv(file_path, sep='\t')
-                else:
-                    raise ValueError("仅支持制表符分隔的txt文件")
-                self.columns = self.phenotype_data.columns.tolist()
-                if self.columns[0] == 'FID' and self.columns[1] == 'IID':
-                    self.trait_combo.clear()
-                    self.trait_combo.addItems(self.columns[2:])
-                else:
-                    line_edit.clear()
-                    QMessageBox.critical(self, "数据加载错误",
-                                         f"无法加载表型数据：\n"
-                                         f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
-            except Exception as e:
-                line_edit.clear()
-                QMessageBox.critical(self, "数据加载错误",
-                                     f"无法加载表型数据：\n{str(e)}\n"
-                                     f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
-                self.log_view.setText("数据加载错误"
-                                      f"无法加载表型数据：\n{str(e)}\n"
-                                      f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
-
     def create_gwas_param_group(self):
         """创建 GWAS 参数设置组"""
         gwas_param_group = QGroupBox("GWAS参数设置")
@@ -231,16 +202,6 @@ class GWASTab(QWidget):
         gwas_param_group.setLayout(gwas_param_layout)
         return gwas_param_group
 
-    def create_log_group(self):
-        """创建日志输出组"""
-        log_group = QGroupBox("运行日志")
-        log_layout = QVBoxLayout()
-        self.log_view = QTextEdit()
-        self.log_view.setReadOnly(True)
-        log_layout.addWidget(self.log_view)
-        log_group.setLayout(log_layout)
-        return log_group
-
     def create_result_file_path_group(self):
         """创建结果文件路径选择组"""
         result_file_path_group = QGroupBox("结果文件路径选择")
@@ -257,32 +218,6 @@ class GWASTab(QWidget):
 
         result_file_path_group.setLayout(result_file_path_layout)
         return result_file_path_group
-
-    def select_path(self, line_edit, mode="file"):
-        """选择文件或目录路径"""
-        try:
-            if mode == "file":
-                path, _ = QFileDialog.getOpenFileName(self, "选择文件")
-            elif mode == "directory":
-                path = QFileDialog.getExistingDirectory(self, "选择目录")
-            else:
-                raise ValueError("Invalid mode. Use 'file' or 'directory'.")
-
-            if path:
-                line_edit.setText(path)
-        except Exception as e:
-            QMessageBox.critical(self, "错误", f"选择路径时发生错误: {str(e)}")
-
-    def preview_file(self, file_path):
-        """预览文件"""
-        try:
-            self.log_view.append(f'预览文件 {file_path}')
-            if not file_path or not os.path.isfile(file_path):
-                raise FileNotFoundError("文件路径无效，请先选择或传递文件！")
-            dialog = FilePreviewDialog(file_path, self)
-            dialog.exec()
-        except Exception as e:
-            QMessageBox.critical(self, "错误", str(e))
 
     def load_traits(self, label_text, line_edit):
         self.select_path(line_edit, mode="file")
