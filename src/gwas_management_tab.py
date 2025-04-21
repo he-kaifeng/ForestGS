@@ -104,7 +104,7 @@ class GWASTab(CommonTab):
             "geno_file": self.geno_file_edit.text().strip(),
             "kinship_file": self.kinship_file_edit.text().strip() if self.kinship_file_edit.text().strip() else None,
             "covar_file": self.covar_file_edit.text().strip() if self.covar_file_edit.text().strip() else None,
-            "core_sample_file": self.core_sample_edit.text().strip() if self.core_sample_edit.text().strip() else None,
+            # "core_sample_file": self.core_sample_edit.text().strip() if self.core_sample_edit.text().strip() else None,
             "result_dir": self.result_file_path_edit.text().strip(),
             "pheno_trait": self.trait_combo.currentText(),
             "random_marker": self.random_marker_check.isChecked(),
@@ -140,7 +140,7 @@ class GWASTab(CommonTab):
         self.geno_file_edit = QLineEdit()
         self.kinship_file_edit = QLineEdit()
         self.covar_file_edit = QLineEdit()
-        self.core_sample_edit = QLineEdit()
+        # self.core_sample_edit = QLineEdit()
 
         # 为每个文件选择创建布局
         def add_file_selector(label_text, line_edit):
@@ -163,7 +163,7 @@ class GWASTab(CommonTab):
         add_file_selector("基因型数据文件:", self.geno_file_edit)
         add_file_selector("亲缘关系矩阵文件 (可选):", self.kinship_file_edit)
         add_file_selector("协方差矩阵文件 (可选):", self.covar_file_edit)
-        add_file_selector("核心样本ID文件 (可选):", self.core_sample_edit)
+        # add_file_selector("核心样本ID文件 (可选):", self.core_sample_edit)
 
         file_group.setLayout(file_layout)
         return file_group
@@ -179,20 +179,20 @@ class GWASTab(CommonTab):
         gwas_param_layout.addRow("选择性状:", self.trait_combo)
 
         # 随机标记
-        self.random_marker_check = QCheckBox("使用随机标记")
-        self.random_marker_check.setChecked(True)
-        gwas_param_layout.addWidget(self.random_marker_check)
+        # self.random_marker_check = QCheckBox("使用随机标记")
+        # self.random_marker_check.setChecked(True)
+        # gwas_param_layout.addWidget(self.random_marker_check)
 
         # 标记数量
         self.marker_num_spin = QSpinBox()
-        self.marker_num_spin.setRange(1000, 1000000)
-        self.marker_num_spin.setValue(10000)
-        self.marker_num_spin.setSingleStep(1000)
-        gwas_param_layout.addRow("标记数量:", self.marker_num_spin)
+        # self.marker_num_spin.setRange(1000, 1000000)
+        # self.marker_num_spin.setValue(10000)
+        # self.marker_num_spin.setSingleStep(1000)
+        # gwas_param_layout.addRow("标记数量:", self.marker_num_spin)
 
         # 使用-logp排序后的显著性标记
-        self.logp_marker_check = QCheckBox("使用-logp排序后的显著性标记")
-        gwas_param_layout.addWidget(self.logp_marker_check)
+        # self.logp_marker_check = QCheckBox("使用-logp排序后的显著性标记")
+        # gwas_param_layout.addWidget(self.logp_marker_check)
 
         # 执行分析按钮
         self.btn_run_gwas = QPushButton("执行全基因组关联分析")

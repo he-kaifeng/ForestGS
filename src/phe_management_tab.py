@@ -88,7 +88,6 @@ class PhenoManagementTab(CommonTab):
         self.setLayout(main_layout)
 
     def connect_signals(self):
-        """连接信号与槽"""
         self.worker.progress_signal.connect(self.log_view.append)
         self.worker.error_signal.connect(lambda msg: QMessageBox.critical(self, "错误", msg))
         self.worker.result_signal.connect(self.handle_result)
@@ -98,7 +97,6 @@ class PhenoManagementTab(CommonTab):
         self.btn_execute_recoding.clicked.connect(self.run_recoding)
 
     def run_missing_value_fill(self):
-        """执行缺失值填充"""
         if not self.validate_input():
             return
         trait = self.missing_value_combobox.currentText()
@@ -107,7 +105,6 @@ class PhenoManagementTab(CommonTab):
         self.worker.start_missing_value_fill.emit(self.phenotype_data, trait, method, out_dir)
 
     def run_outlier_filter(self):
-        """执行异常值过滤"""
         if not self.validate_input():
             return
         trait = self.trait_combobox.currentText()
@@ -116,7 +113,6 @@ class PhenoManagementTab(CommonTab):
         self.worker.start_outlier_filter.emit(self.phenotype_data, trait, sd_multiplier, out_dir)
 
     def run_normalization(self):
-        """执行数据归一化"""
         if not self.validate_input():
             return
         trait = self.recoding_combobox.currentText()
@@ -125,7 +121,6 @@ class PhenoManagementTab(CommonTab):
         self.worker.start_normalization.emit(self.phenotype_data, trait, method, out_dir)
 
     def run_recoding(self):
-        """执行数据重编码"""
         if not self.validate_input():
             return
         trait = self.normalization_combobox.currentText()
@@ -140,18 +135,15 @@ class PhenoManagementTab(CommonTab):
         self.worker.start_recoding.emit(self.phenotype_data, trait, direction, out_dir, mapping_file)
 
     def handle_result(self, result):
-        """处理业务逻辑返回的结果"""
         self.phenotype_data = result
         self.log_view.append("数据处理完成，结果已更新")
 
     def closeEvent(self, event):
-        """关闭窗口时停止线程"""
         self.thread.quit()
         self.thread.wait()
         super().closeEvent(event)
 
     def create_file_group(self):
-        """创建文件选择组"""
         file_group = QGroupBox("文件选择")
         file_layout = QVBoxLayout()
         # 输入文件路径
@@ -163,7 +155,7 @@ class PhenoManagementTab(CommonTab):
         btn_select_file = QPushButton("选择目标文件")
         btn_select_file.clicked.connect(self.open_file)
         btn_preview = QPushButton("预览")
-        btn_preview.clicked.connect(self.preview_file)
+        btn_preview.clicked.connect(lambda: self.preview_file(self.file_path.text()))
         file_path_layout.addWidget(self.file_path, stretch=3)
         file_path_layout.addWidget(btn_select_file, stretch=1)
         file_path_layout.addWidget(btn_preview, stretch=1)
@@ -183,7 +175,6 @@ class PhenoManagementTab(CommonTab):
         return file_group
 
     def open_file(self):
-        """打开文件并加载数据"""
         self.select_path(self.file_path, mode="file")
         file_path = self.file_path.text()
         if not file_path or not os.path.isfile(file_path):
@@ -191,7 +182,6 @@ class PhenoManagementTab(CommonTab):
         self.load_phenotype_data(file_path)
 
     def load_phenotype_data(self, file_path):
-        """加载表型数据"""
         try:
             if file_path.endswith('.csv'):
                 self.phenotype_data = pd.read_csv(file_path, encoding='utf-8')
@@ -214,7 +204,6 @@ class PhenoManagementTab(CommonTab):
                                   f"请确保：\n1. 文件格式正确\n2. 包含表头行\n")
 
     def add_items(self):
-        """更新下拉框选项"""
         self.trait_combobox.clear()
         self.recoding_combobox.clear()
         self.normalization_combobox.clear()
@@ -225,7 +214,6 @@ class PhenoManagementTab(CommonTab):
         self.missing_value_combobox.addItems(self.columns)
 
     def create_param_group(self):
-        """创建异常值过滤组"""
         param_group = QGroupBox("异常值过滤")
         param_layout = QFormLayout()
         self.trait_combobox = QComboBox()
@@ -245,7 +233,6 @@ class PhenoManagementTab(CommonTab):
         return param_group
 
     def create_recoding_group(self):
-        """创建数据归一化组"""
         recoding_group = QGroupBox("数据归一化")
         recoding_layout = QFormLayout()
         self.recoding_combobox = QComboBox()
@@ -262,7 +249,6 @@ class PhenoManagementTab(CommonTab):
         return recoding_group
 
     def create_normalization_group(self):
-        """创建数据重编码组"""
         normalization_group = QGroupBox("数据重编码")
         main_layout = QVBoxLayout()
         form_layout = QFormLayout()
@@ -293,7 +279,6 @@ class PhenoManagementTab(CommonTab):
         return normalization_group
 
     def create_missing_value_group(self):
-        """创建缺失值填充组"""
         missing_value_group = QGroupBox("缺失值填充")
         missing_value_layout = QFormLayout()
         self.missing_value_combobox = QComboBox()
@@ -310,12 +295,10 @@ class PhenoManagementTab(CommonTab):
         return missing_value_group
 
     def _toggle_mapping_file(self):
-        """切换转化表文件控件的可见性"""
         is_num2word = "num2word" in self.recoding_direction.currentText()
         self.mapping_file_widget.setVisible(is_num2word)
 
     def validate_input(self):
-        """验证输入合法性"""
         if not self.file_path.text() or not os.path.isfile(self.file_path.text()):
             QMessageBox.warning(self, "错误", "请先选择有效的表型数据文件！")
             return False
@@ -329,12 +312,3 @@ class PhenoManagementTab(CommonTab):
             QMessageBox.warning(self, "错误", "标准差倍数应在1.0到5.0之间！")
             return False
         return True
-
-    def handle_file_path(self, file_path):
-        try:
-            if not os.path.isfile(file_path):
-                raise FileNotFoundError("文件路径无效，请先选择或传递文件！")
-            self.file_path.setText(file_path)
-            self.load_phenotype_data(file_path)
-        except Exception as e:
-            QMessageBox.critical(self, "错误", str(e))

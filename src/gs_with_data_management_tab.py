@@ -119,10 +119,9 @@ class GSWithDataTab(CommonTab):
             if model["specie"] == selected_specie:
                 for population in model["populations"]:
                     if population["population"] == selected_population:
-                        # 修改此处为超链接格式
                         paper_link = f"<a href='{population['url']}'>{population['paper']}</a>"
                         self.paper_info_label.setText(f"文献信息：{paper_link}")
-                        self.paper_info_label.setOpenExternalLinks(True)  # 允许打开外部链接
+                        self.paper_info_label.setOpenExternalLinks(True)
                         self.pheno_file = population["phe"]
                         self.geno_file = population["geno"]
                         self.load_traits(self.pheno_file)

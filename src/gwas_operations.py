@@ -37,19 +37,19 @@ class GWASOperations(QObject):
                 "--pheno", gwas_args["pheno_file"],
                 "--pheno-name", gwas_args["pheno_trait"],
                 "--out", os.path.join(gwas_args["result_dir"], "gwas_results"),
-                "--allow-no-sex"
+                "--allow-no-sex",
             ])
             # 添加可选参数
             if gwas_args["kinship_file"]:
                 plink_cmd.extend(["--genome", gwas_args["kinship_file"]])
             if gwas_args["covar_file"]:
                 plink_cmd.extend(["--covar", gwas_args["covar_file"]])
-            if gwas_args["core_sample_file"]:
-                plink_cmd.extend(["--keep", gwas_args["core_sample_file"]])
-            if gwas_args["random_marker"]:
-                plink_cmd.extend(["--mperm", str(gwas_args["marker_num"])])
-            if gwas_args["logp_marker"]:
-                plink_cmd.extend(["--logistic", "hide-covar"])
+            # if gwas_args["core_sample_file"]:
+            #     plink_cmd.extend(["--keep", gwas_args["core_sample_file"]])
+            # if gwas_args["random_marker"]:
+            #     plink_cmd.extend(["--mperm", str(gwas_args["marker_num"])])
+            # if gwas_args["logp_marker"]:
+            #     plink_cmd.extend(["--logistic", "hide-covar"])
             # 执行命令
             self.progress_signal.emit(f"执行命令: {' '.join(plink_cmd)}")
             subprocess.run(plink_cmd, check=True)

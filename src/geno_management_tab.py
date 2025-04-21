@@ -20,10 +20,10 @@ class GenoManagementTab(CommonTab):
         }
         self.plink_path = plink_path
         self.init_ui()
-        self.worker = GenoOperations(self.plink_path)  # 业务逻辑对象
-        self.thread = QThread()  # 新线程
-        self.worker.moveToThread(self.thread)  # 将业务逻辑移动到新线程
-        self.connect_signals()  # 连接信号和槽
+        self.worker = GenoOperations(self.plink_path)
+        self.thread = QThread()
+        self.worker.moveToThread(self.thread)
+        self.connect_signals()
         self.thread.start()
 
     def init_ui(self):
@@ -70,16 +70,12 @@ class GenoManagementTab(CommonTab):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)
 
-        # 文件选择组
         file_group = self.create_file_group()
-        main_layout.addWidget(file_group)
-
-        # 格式转换与质控组
         convert_qc_group = self.create_convert_qc_group()
-        main_layout.addWidget(convert_qc_group)
-
-        # 日志输出组
         log_group = self.create_log_group()
+
+        main_layout.addWidget(file_group)
+        main_layout.addWidget(convert_qc_group)
         main_layout.addWidget(log_group, stretch=1)
 
         self.setLayout(main_layout)
@@ -142,11 +138,9 @@ class GenoManagementTab(CommonTab):
                                                 extract_file)
 
     def handle_result(self, result):
-        """处理业务逻辑返回的结果"""
         self.log_view.append("数据处理完成，结果已更新")
 
     def validate_input(self):
-        """验证输入是否有效"""
         if not self.file_path.text() or not os.path.isfile(self.file_path.text()):
             QMessageBox.warning(self, "错误", "请选择有效的输入文件！")
             return False
@@ -168,7 +162,7 @@ class GenoManagementTab(CommonTab):
         btn_select_file = QPushButton("选择目标文件")
         btn_select_file.clicked.connect(lambda: self.select_path(self.file_path, mode="file"))
         btn_preview = QPushButton("预览")
-        btn_preview.clicked.connect(self.preview_file)
+        btn_preview.clicked.connect(lambda: self.preview_file(self.file_path.text()))
         file_path_layout.addWidget(self.file_path, stretch=3)
         file_path_layout.addWidget(btn_select_file, stretch=1)
         file_path_layout.addWidget(btn_preview, stretch=1)
@@ -293,21 +287,21 @@ class GenoManagementTab(CommonTab):
         self.pca_components_spin.setRange(2, 10)
         self.pca_components_spin.setValue(3)
         self.pca_components_spin.setSingleStep(1)
-        genetics_layout.addRow("主成分数量 (PCA):", self.pca_components_spin)
+        genetics_layout.addRow("群体分层分析 (PCA):", self.pca_components_spin)
         # 亲缘关系矩阵方法
         self.relationship_method = QComboBox()
         self.relationship_method.addItems(["IBS", "GRM"])
-        genetics_layout.addRow("亲缘关系矩阵方法:", self.relationship_method)
+        genetics_layout.addRow("亲缘关系检查:", self.relationship_method)
         # SNP 过滤文件选择
-        self.extract_file_edit = QLineEdit()
-        self.extract_file_edit.setPlaceholderText("选择 SNP 过滤文件（可选）")
-        self.extract_file_edit.setReadOnly(True)  # 禁止手动输入
-        self.btn_extract_file = QPushButton("浏览...")
-        self.btn_extract_file.clicked.connect(lambda: self.select_path(self.output_path, mode="file"))
-        extract_file_layout = QHBoxLayout()
-        extract_file_layout.addWidget(self.extract_file_edit)
-        extract_file_layout.addWidget(self.btn_extract_file)
-        genetics_layout.addRow("SNP 过滤文件:", extract_file_layout)
+        # self.extract_file_edit = QLineEdit()
+        # self.extract_file_edit.setPlaceholderText("选择 SNP 过滤文件（可选）")
+        # self.extract_file_edit.setReadOnly(True)  # 禁止手动输入
+        # self.btn_extract_file = QPushButton("浏览...")
+        # self.btn_extract_file.clicked.connect(lambda: self.select_path(self.output_path, mode="file"))
+        # extract_file_layout = QHBoxLayout()
+        # extract_file_layout.addWidget(self.extract_file_edit)
+        # extract_file_layout.addWidget(self.btn_extract_file)
+        # genetics_layout.addRow("SNP 过滤文件:", extract_file_layout)
         # 执行遗传分析按钮
         self.btn_genetic_analysis = QPushButton("执行遗传分析")
         self.btn_genetic_analysis.setStyleSheet("background-color: #8BC34A; color: white;")
@@ -323,11 +317,3 @@ class GenoManagementTab(CommonTab):
         layout.addWidget(line_edit)
         layout.addWidget(btn)
         return line_edit, layout
-
-    def handle_file_path(self, file_path):
-        try:
-            if not os.path.isfile(file_path):
-                raise FileNotFoundError("文件路径无效，请先选择或传递文件！")
-            self.file_path.setText(file_path)
-        except Exception as e:
-            QMessageBox.critical(self, "错误", str(e))

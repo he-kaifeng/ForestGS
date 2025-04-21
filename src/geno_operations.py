@@ -288,7 +288,8 @@ class GenoOperations(QObject):
             self.progress_signal.emit(f"正在执行数据筛选\n\t输入文件: {input_file}")
             # 获取输入文件的基本名（不带扩展名）
             base_name = os.path.splitext(os.path.basename(input_file))[0]
-            output_file = os.path.join(output_dir, base_name)
+            result_name = base_name + "_handle"
+            output_file = os.path.join(output_dir, result_name)
             # 获取输入文件的扩展名
             input_extension = os.path.splitext(input_file)[1].lower()
             # 检查输入文件格式是否有效

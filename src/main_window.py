@@ -13,6 +13,7 @@ from gs_management_tab import GSTab
 from gwas_management_tab import GWASTab
 from phe_management_tab import PhenoManagementTab
 from gs_with_data_management_tab import GSWithDataTab
+from file_preview_dialog import FilePreviewDialog
 
 
 class MainWindow(QMainWindow):
@@ -89,7 +90,7 @@ class MainWindow(QMainWindow):
         self.workspace_tabs.addTab(PhenoManagementTab(), "表型数据处理")
         self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), "全基因型关联分析")
         self.workspace_tabs.addTab(GSWithDataTab(config_file='../config/curated_models.json'), "表型预测")
-        self.workspace_tabs.addTab(GSTab(), "用户模型训练")
+        self.workspace_tabs.addTab(GSTab(), "用户数据构建模型预测")
 
     def setup_menubar(self):
         """ 设置菜单栏 """
@@ -140,20 +141,15 @@ class MainWindow(QMainWindow):
             self.main_splitter.setSizes([300, 980])  # 文件夹区域宽度为 300
 
     def on_file_double_click(self, index):
-        """ 双击文件打开到工作区 """
         file_path = self.file_model.filePath(index)
 
-        if os.path.isfile(file_path):
-            self.status_bar.showMessage(f"已选中文件: {file_path}")
-
-            # 获取当前激活的标签页
-            current_tab = self.workspace_tabs.currentWidget()
-
-            # 检查标签页是否具有处理文件路径的方法
-            if hasattr(current_tab, "handle_file_path"):
-                current_tab.handle_file_path(file_path)
-            else:
-                self.status_bar.showMessage(f"当前标签页不支持文件处理: {type(current_tab).__name__}")
+        try:
+            if not file_path or not os.path.isfile(file_path):
+                return
+            dialog = FilePreviewDialog(file_path, self)
+            dialog.exec()
+        except Exception as e:
+            QMessageBox.critical(self, "错误", str(e))
 
     def closeEvent(self, event: QCloseEvent):
         reply = QMessageBox.question(self, '退出', '是否确认退出?',
