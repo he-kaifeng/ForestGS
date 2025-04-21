@@ -208,7 +208,7 @@ class GenoOperations(QObject):
         plt.xticks(fontsize=10)
         plt.yticks(fontsize=10)
         plt.grid(True, linestyle='--', alpha=0.7)
-        plt.savefig(f"{output_prefix}_het.pdf")
+        plt.savefig(f"{output_prefix}_het.png")
         plt.close()
 
     def _generate_maf_histogram(self, output_prefix):
@@ -226,7 +226,7 @@ class GenoOperations(QObject):
         plt.xticks(fontsize=10)
         plt.yticks(fontsize=10)
         plt.grid(True, linestyle='--', alpha=0.7)
-        plt.savefig(f"{output_prefix}_maf.pdf")
+        plt.savefig(f"{output_prefix}_maf.png")
         plt.close()
 
     def _generate_imiss_histogram(self, output_prefix):
@@ -244,7 +244,7 @@ class GenoOperations(QObject):
         plt.xticks(fontsize=10)
         plt.yticks(fontsize=10)
         plt.grid(True, linestyle='--', alpha=0.7)
-        plt.savefig(f"{output_prefix}_imiss.pdf")
+        plt.savefig(f"{output_prefix}_imiss.png")
         plt.close()
 
     def _generate_lmiss_histogram(self, output_prefix):
@@ -262,7 +262,7 @@ class GenoOperations(QObject):
         plt.xticks(fontsize=10)
         plt.yticks(fontsize=10)
         plt.grid(True, linestyle='--', alpha=0.7)
-        plt.savefig(f"{output_prefix}_lmiss.pdf")
+        plt.savefig(f"{output_prefix}_lmiss.png")
         plt.close()
 
     def _cleanup_intermediate_files(self, output_prefix):
@@ -455,7 +455,7 @@ class GenoOperations(QObject):
         plt.title("PCA Scatter Plot (Top 2 Principal Components)", fontsize=16, pad=20)
         plt.grid(True, linestyle='--', alpha=0.6)
         plt.tight_layout()
-        plt.savefig(f"{output_prefix}_pca.pdf", dpi=300, bbox_inches='tight')
+        plt.savefig(f"{output_prefix}_pca.png", dpi=300, bbox_inches='tight')
         plt.close()
 
     def _generate_relationship_heatmap(self, relationship_matrix_file, output_prefix, relationship_method):
@@ -490,7 +490,7 @@ class GenoOperations(QObject):
         plt.figure(figsize=(10, 8))
         sns.heatmap(matrix, cmap="viridis", annot=False, fmt=".2f")
         plt.title(f"Kinship Correlation Heatmap ({relationship_method})")
-        plt.savefig(f"{output_prefix}_relationship_heatmap.pdf")
+        plt.savefig(f"{output_prefix}_relationship_heatmap.png")
         plt.close()
 
 

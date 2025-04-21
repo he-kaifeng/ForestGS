@@ -246,7 +246,7 @@ def visualize_results(metrics, save_dir="results"):
         sns.boxplot(data=[y_test, y_pred], palette="Set2")
         plt.xticks([0, 1], ['Actual Values', 'Predicted Values'])
         plt.title(f'Boxplot of Actual vs Predicted Values\nR²={r2:.3f}, PCC={pcc:.3f}, RMSE={rmse:.3f}')
-        plt.savefig(os.path.join(save_dir, "boxplot.pdf"), dpi=300, bbox_inches="tight")
+        plt.savefig(os.path.join(save_dir, "boxplot.png"), dpi=300, bbox_inches="tight")
         plt.close()
 
         plt.figure(figsize=(6, 6))
@@ -255,7 +255,7 @@ def visualize_results(metrics, save_dir="results"):
         plt.title(f'Scatter Plot of Actual vs Predicted Values\nR²={r2:.3f}, PCC={pcc:.3f}, RMSE={rmse:.3f}')
         plt.xlabel('Actual Values')
         plt.ylabel('Predicted Values')
-        plt.savefig(os.path.join(save_dir, "scatter_plot.pdf"), dpi=300, bbox_inches="tight")
+        plt.savefig(os.path.join(save_dir, "scatter_plot.png"), dpi=300, bbox_inches="tight")
         plt.close()
 
         plt.figure(figsize=(6, 6))
@@ -263,7 +263,7 @@ def visualize_results(metrics, save_dir="results"):
         sns.histplot(y_pred, color='orange', label='Predicted Values', kde=True)
         plt.title(f'Distribution of Actual vs Predicted Values\nR²={r2:.3f}, PCC={pcc:.3f}, RMSE={rmse:.3f}')
         plt.legend()
-        plt.savefig(os.path.join(save_dir, "distribution_plot.pdf"), dpi=300, bbox_inches="tight")
+        plt.savefig(os.path.join(save_dir, "distribution_plot.png"), dpi=300, bbox_inches="tight")
         plt.close()
 
     except Exception as e:

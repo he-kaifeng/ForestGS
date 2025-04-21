@@ -104,7 +104,7 @@ class PhenoOperations(QObject):
             plt.xlabel(trait)
             plt.ylabel('Frequency')
             # 保存分布图
-            plot_file_path = os.path.join(out_dir, f'frequency_distribution_{trait}.pdf')
+            plot_file_path = os.path.join(out_dir, f'frequency_distribution_{trait}.png')
             plt.tight_layout()
             plt.savefig(plot_file_path, dpi=300)
             plt.close()
@@ -157,7 +157,7 @@ class PhenoOperations(QObject):
                 plt.ylabel('Phenotype Value')
                 plt.xlabel('Group')
                 # 保存分布图
-                plot_file_path = os.path.join(out_dir, f'distribution_{trait}_{method}.pdf')
+                plot_file_path = os.path.join(out_dir, f'distribution_{trait}_{method}.png')
                 plt.tight_layout()
                 plt.savefig(plot_file_path, dpi=300)
                 plt.close()

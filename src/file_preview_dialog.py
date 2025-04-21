@@ -1,5 +1,8 @@
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton
+import os
+
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap, QFont
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLabel, QScrollArea, QWidget, QTextEdit
 
 
 class FilePreviewDialog(QDialog):
@@ -11,18 +14,41 @@ class FilePreviewDialog(QDialog):
         # 主布局
         layout = QVBoxLayout()
 
-        # 文本显示区域
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        layout.addWidget(self.text_edit)
+        # 滚动区域
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        layout.addWidget(scroll_area)
+
+        # 内容显示区域
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+        scroll_area.setWidget(content_widget)
 
         # 加载文件内容
+        file_extension = os.path.splitext(file_path)[1].lower()
+
         try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
-            self.text_edit.setPlainText(content)
+            if file_extension in ['.png', '.jpg', '.jpeg', '.bmp', '.gif']:
+                image_label = QLabel()
+                pixmap = QPixmap(file_path)
+                image_label.setPixmap(pixmap)
+                image_label.setScaledContents(True)
+                content_layout.addWidget(image_label)
+            else:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+                text_edit = QTextEdit()
+                text_edit.setPlainText(content)
+                text_edit.setReadOnly(True)
+                font = QFont("Courier", 10)
+                text_edit.setFont(font)
+                content_layout.addWidget(text_edit)
         except Exception as e:
-            self.text_edit.setPlainText(f"无法加载文件内容:\n{str(e)}")
+            error_label = QLabel(f"无法加载文件内容:\n{str(e)}")
+            error_label.setWordWrap(True)
+            content_layout.addWidget(error_label)
+
+        content_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         # 关闭按钮
         btn_close = QPushButton("关闭")
