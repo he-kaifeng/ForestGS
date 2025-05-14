@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         # 设置菜单栏、工具栏和状态栏
-        self.setup_menubar()
+        # self.setup_menubar()
         self.setup_toolbar()
         self.setup_statusbar()
 

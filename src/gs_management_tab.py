@@ -127,7 +127,7 @@ class GSTab(CommonTab):
 
         add_file_selector("训练表型数据文件:", self.pheno_file_edit)
         add_file_selector("训练基因型数据文件:", self.geno_file_edit)
-        add_file_selector("核心样本ID文件 (可选):", self.core_sample_edit)
+        # add_file_selector("核心样本ID文件 (可选):", self.core_sample_edit)
         add_file_selector("预测基因型文件:", self.train_model_file_edit)
         file_group.setLayout(file_layout)
         return file_group

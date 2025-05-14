@@ -47,6 +47,45 @@ class GSWithDataTab(CommonTab):
         self.log_view.append(message)
 
     def init_ui(self):
+        # 设置窗口样式
+        self.setStyleSheet("""
+                    QWidget {
+                        font-family: "Segoe UI";
+                        font-size: 12px;
+                    }
+                    QGroupBox {
+                        font-size: 14px;
+                        font-weight: bold;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                        margin-top: 10px;
+                        padding-top: 15px;
+                    }
+                    QLineEdit, QComboBox {
+                        padding: 5px;
+                        border: 1px solid #ccc;
+                        border-radius: 3px;
+                    }
+                    QPushButton {
+                        background-color: #2196F3;
+                        color: white;
+                        padding: 8px;
+                        border-radius: 5px;
+                        font-size: 12px;
+                    }
+                    QPushButton:hover {
+                        background-color: #1976D2;
+                    }
+                    QTextEdit {
+                        border: 1px solid #ccc;
+                        border-radius: 3px;
+                        padding: 5px;
+                    }
+                    QLabel {
+                        font-size: 12px;
+                    }
+                """)
+
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)
@@ -217,10 +256,10 @@ class GSWithDataTab(CommonTab):
         main_layout = QVBoxLayout()
 
         training_layout = QHBoxLayout()
-        lbl_training = QLabel("训练文件：")  # 新增标签
+        lbl_training = QLabel("预测文件：")  # 新增标签
         self.training_file_path_edit = QLineEdit()
-        self.training_file_path_edit.setPlaceholderText("选择训练文件路径")
-        btn_training = QPushButton("选择训练文件")
+        self.training_file_path_edit.setPlaceholderText("选择预测文件路径")
+        btn_training = QPushButton("选择训练基因型文件")
         btn_training.clicked.connect(lambda: self.select_path(self.training_file_path_edit, mode="file"))
 
         training_layout.addWidget(lbl_training)

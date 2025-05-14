@@ -1,7 +1,7 @@
 import os
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QFont
+from PyQt6.QtGui import QPixmap, QFont, QImage
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLabel, QScrollArea, QWidget, QTextEdit
 
 
@@ -31,8 +31,16 @@ class FilePreviewDialog(QDialog):
             if file_extension in ['.png', '.jpg', '.jpeg', '.bmp', '.gif']:
                 image_label = QLabel()
                 pixmap = QPixmap(file_path)
-                image_label.setPixmap(pixmap)
-                image_label.setScaledContents(True)
+
+                # 获取窗口的大小
+                max_width = self.width() - 40  # 留一些边距
+                max_height = self.height() - 100  # 为关闭按钮留些空间
+
+                # 缩放图片
+                scaled_pixmap = self.scale_image(pixmap, max_width, max_height)
+
+                image_label.setPixmap(scaled_pixmap)
+                image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 content_layout.addWidget(image_label)
             else:
                 with open(file_path, "r", encoding="utf-8") as file:
@@ -56,3 +64,25 @@ class FilePreviewDialog(QDialog):
         layout.addWidget(btn_close, alignment=Qt.AlignmentFlag.AlignRight)
 
         self.setLayout(layout)
+
+    def scale_image(self, pixmap, max_width, max_height):
+        # 获取原始图片的尺寸
+        original_width = pixmap.width()
+        original_height = pixmap.height()
+
+        # 计算缩放比例
+        width_ratio = max_width / original_width
+        height_ratio = max_height / original_height
+        scale_ratio = min(width_ratio, height_ratio)
+
+        # 如果图片小于最大尺寸，则不进行缩放
+        if scale_ratio >= 1:
+            return pixmap
+
+        # 计算新的尺寸
+        new_width = int(original_width * scale_ratio)
+        new_height = int(original_height * scale_ratio)
+
+        # 缩放图片
+        return pixmap.scaled(new_width, new_height, Qt.AspectRatioMode.KeepAspectRatio,
+                             Qt.TransformationMode.SmoothTransformation)
