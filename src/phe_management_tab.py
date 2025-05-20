@@ -3,11 +3,10 @@ import os
 import pandas as pd
 from PyQt6.QtCore import Qt, QThread
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-    QLineEdit, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
 )
 
-from common_tab import CommonTab
+from common_tab import CommonTab, DraggableLineEdit
 from pheno_operations import PhenoOperations
 
 
@@ -22,44 +21,6 @@ class PhenoManagementTab(CommonTab):
         self.thread.start()
 
     def init_ui(self):
-        """初始化用户界面"""
-        self.setStyleSheet("""
-            QWidget {
-                font-family: "Segoe UI";
-                font-size: 12px;
-            }
-            QGroupBox {
-                font-size: 14px;
-                font-weight: bold;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                margin-top: 10px;
-                padding-top: 15px;
-            }
-            QLineEdit, QComboBox {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 3px;
-            }
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                padding: 8px;
-                border-radius: 5px;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #1976D2;
-            }
-            QTextEdit {
-                border: 1px solid #ccc;
-                border-radius: 3px;
-                padding: 5px;
-            }
-            QLabel {
-                font-size: 12px;
-            }
-        """)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)
@@ -151,7 +112,7 @@ class PhenoManagementTab(CommonTab):
         input_file_label.setStyleSheet("font-weight: bold;")
         file_layout.addWidget(input_file_label)
         file_path_layout = QHBoxLayout()
-        self.file_path = QLineEdit()
+        self.file_path = DraggableLineEdit()
         btn_select_file = QPushButton("选择目标文件")
         btn_select_file.clicked.connect(self.open_file)
         btn_preview = QPushButton("预览")
@@ -165,7 +126,7 @@ class PhenoManagementTab(CommonTab):
         output_label.setStyleSheet("font-weight: bold;")
         file_layout.addWidget(output_label)
         output_path_layout = QHBoxLayout()
-        self.output_dir = QLineEdit()
+        self.output_dir = DraggableLineEdit()
         btn_output = QPushButton("选择输出路径")
         btn_output.clicked.connect(lambda: self.select_path(self.output_dir, "directory"))
         output_path_layout.addWidget(self.output_dir, stretch=3)
@@ -263,7 +224,7 @@ class PhenoManagementTab(CommonTab):
         main_layout.addLayout(form_layout)
         self.mapping_file_widget = QWidget()
         file_layout = QHBoxLayout()
-        self.mapping_file_edit = QLineEdit()
+        self.mapping_file_edit = DraggableLineEdit()
         self.mapping_file_btn = QPushButton("选择转化表")
         self.mapping_file_btn.clicked.connect(lambda: self.select_path(self.mapping_file_edit, "file"))
         file_layout.addWidget(self.mapping_file_edit)

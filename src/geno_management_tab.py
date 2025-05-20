@@ -3,10 +3,10 @@ import os
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton,
-    QLineEdit, QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QLabel, QGridLayout
+    QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QLabel, QGridLayout
 )
 
-from common_tab import CommonTab
+from common_tab import CommonTab, DraggableLineEdit
 from geno_operations import GenoOperations
 
 
@@ -27,45 +27,6 @@ class GenoManagementTab(CommonTab):
         self.thread.start()
 
     def init_ui(self):
-        # 设置窗口样式
-        self.setStyleSheet("""
-            QWidget {
-                font-family: "Segoe UI";
-                font-size: 12px;
-            }
-            QGroupBox {
-                font-size: 14px;
-                font-weight: bold;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                margin-top: 10px;
-                padding-top: 15px;
-            }
-            QLineEdit, QComboBox {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 3px;
-            }
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                padding: 8px;
-                border-radius: 5px;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #1976D2;
-            }
-            QTextEdit {
-                border: 1px solid #ccc;
-                border-radius: 3px;
-                padding: 5px;
-            }
-            QLabel {
-                font-size: 12px;
-            }
-        """)
-
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)
@@ -158,7 +119,7 @@ class GenoManagementTab(CommonTab):
         file_layout.addWidget(target_file_label)
 
         file_path_layout = QHBoxLayout()
-        self.file_path = QLineEdit()
+        self.file_path = DraggableLineEdit()
         btn_select_file = QPushButton("选择目标文件")
         btn_select_file.clicked.connect(lambda: self.select_path(self.file_path, mode="file"))
         btn_preview = QPushButton("预览")
@@ -169,11 +130,10 @@ class GenoManagementTab(CommonTab):
         file_layout.addLayout(file_path_layout)
 
         output_file_label = QLabel("结果输出目录")
-        output_file_label.setStyleSheet("font-weight: bold;")
         file_layout.addWidget(output_file_label)
 
         output_path_layout = QHBoxLayout()
-        self.output_path = QLineEdit()
+        self.output_path = DraggableLineEdit()
         btn_output = QPushButton("选择输出路径")
         btn_output.clicked.connect(lambda: self.select_path(self.output_path, mode="directory"))
         output_path_layout.addWidget(self.output_path, stretch=3)
@@ -218,7 +178,6 @@ class GenoManagementTab(CommonTab):
         self.target_format.addItems(["PLINK文本格式 (.ped)", "PLINK二进制格式 (.bed)", "VCF格式 (.vcf)"])
         convert_layout.addRow("转换为格式:", self.target_format)
         self.btn_convert = QPushButton("执行转换")
-        self.btn_convert.setStyleSheet("background-color: #FF9800; color: white;")
         convert_layout.addWidget(self.btn_convert)
         convert_group.setLayout(convert_layout)
         return convert_group
@@ -251,7 +210,6 @@ class GenoManagementTab(CommonTab):
         qc_layout.addRow("R² 阈值:", self.r2_spin)
 
         self.btn_run_qc = QPushButton("执行质控")
-        self.btn_run_qc.setStyleSheet("background-color: #4CAF50; color: white;")
         qc_layout.addWidget(self.btn_run_qc)
 
         qc_group.setLayout(qc_layout)
@@ -274,7 +232,6 @@ class GenoManagementTab(CommonTab):
         filter_layout.addRow("排除SNP列表文件路径:", btn_exclude_sample)
 
         self.btn_filter = QPushButton("执行数据过滤")
-        self.btn_filter.setStyleSheet("background-color: #FFC107; color: white;")
         filter_layout.addWidget(self.btn_filter)
         filter_group.setLayout(filter_layout)
         return filter_group
@@ -304,14 +261,13 @@ class GenoManagementTab(CommonTab):
         # genetics_layout.addRow("SNP 过滤文件:", extract_file_layout)
         # 执行遗传分析按钮
         self.btn_genetic_analysis = QPushButton("执行遗传分析")
-        self.btn_genetic_analysis.setStyleSheet("background-color: #8BC34A; color: white;")
         genetics_layout.addWidget(self.btn_genetic_analysis)
         genetics_group.setLayout(genetics_layout)
         return genetics_group
 
     def create_file_selector(self):
         layout = QHBoxLayout()
-        line_edit = QLineEdit()
+        line_edit = DraggableLineEdit()
         btn = QPushButton("选择文件")
         btn.clicked.connect(lambda: self.select_path(line_edit, mode="file"))
         layout.addWidget(line_edit)

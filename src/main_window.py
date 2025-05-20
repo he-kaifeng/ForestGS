@@ -81,6 +81,11 @@ class MainWindow(QMainWindow):
         for i in range(2, 4):  # 隐藏日期和类型列
             self.file_tree.setColumnHidden(i, True)
 
+        self.file_tree.setDragEnabled(True)  # 允许拖出
+        self.file_tree.setAcceptDrops(False)  # 不接受拖入
+        self.file_tree.setDropIndicatorShown(True)  # 显示拖放指示器
+        self.file_tree.setDefaultDropAction(Qt.DropAction.CopyAction)  # 拖放动作设为复制
+
         layout.addWidget(self.file_tree)
 
     def setup_workspace_tabs(self):

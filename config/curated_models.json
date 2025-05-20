@@ -7,15 +7,15 @@
           "population": "a",
           "paper": "aaa",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
-          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
-          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+          "phe": "../config/data/phe.txt",
+          "geno": "../config/data/geno.vcf"
         },
         {
           "population": "b",
           "paper": "bbb",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
-          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
-          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+          "phe": "../config/data/phe.txt",
+          "geno": "../config/data/geno.vcf"
         }
       ]
     },
@@ -26,15 +26,15 @@
           "population": "c",
           "paper": "ccc",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
-          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
-          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+          "phe": "../config/data/phe.txt",
+          "geno": "../config/data/geno.vcf"
         },
         {
           "population": "d",
           "paper": "ddd",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
-          "phe": "D:\\Projects\\R_project\\ForestGS\\test\\phe.txt",
-          "geno": "D:\\Projects\\R_project\\ForestGS\\test\\geno.vcf"
+          "phe": "../config/data/phe.txt",
+          "geno": "../config/data/geno.vcf"
         }
       ]
     }

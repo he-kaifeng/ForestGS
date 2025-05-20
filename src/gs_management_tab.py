@@ -1,10 +1,9 @@
 import pandas as pd
 from PyQt6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QPushButton,
-    QLineEdit, QGroupBox, QFormLayout, QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox, QRadioButton, QGridLayout
+    QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox, QRadioButton, QGridLayout
 )
 
-from common_tab import CommonTab
+from common_tab import CommonTab, DraggableLineEdit
 from gs_operations import GSOperations
 
 
@@ -47,47 +46,6 @@ class GSTab(CommonTab):
         self.log_view.append(message)
 
     def init_ui(self):
-        # 设置窗口样式
-        self.setStyleSheet("""
-            QWidget {
-                font-family: "Segoe UI";
-                font-size: 12px;
-            }
-            QGroupBox {
-                font-size: 14px;
-                font-weight: bold;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                margin-top: 10px;
-                padding-top: 15px;
-            }
-            QLineEdit, QComboBox {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 3px;
-            }
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                padding: 8px;
-                border-radius: 5px;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #1976D2;
-            }
-            QTextEdit {
-                border: 1px solid #ccc;
-                border-radius: 3px;
-                padding: 5px;
-            }
-            QRadioButton {
-                font-size: 12px;
-            }
-            QCheckBox {
-                font-size: 12px;
-            }
-        """)
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)
@@ -109,10 +67,10 @@ class GSTab(CommonTab):
         file_group = QGroupBox("输入文件选择")
         file_layout = QFormLayout()
 
-        self.pheno_file_edit = QLineEdit()
-        self.geno_file_edit = QLineEdit()
-        self.core_sample_edit = QLineEdit()
-        self.train_model_file_edit = QLineEdit()
+        self.pheno_file_edit = DraggableLineEdit()
+        self.geno_file_edit = DraggableLineEdit()
+        self.core_sample_edit = DraggableLineEdit()
+        self.train_model_file_edit = DraggableLineEdit()
 
         def add_file_selector(label_text, line_edit):
             file_path_layout = QHBoxLayout()
@@ -201,7 +159,7 @@ class GSTab(CommonTab):
     def create_result_file_path_group(self):
         result_file_path_group = QGroupBox("结果文件路径选择")
         result_file_path_layout = QHBoxLayout()
-        self.result_file_path_edit = QLineEdit()
+        self.result_file_path_edit = DraggableLineEdit()
         self.result_file_path_edit.setPlaceholderText("选择结果文件保存路径")
         btn_select_result_path = QPushButton("选择输出路径")
         btn_select_result_path.clicked.connect(lambda: self.select_path(self.result_file_path_edit, mode="directory"))

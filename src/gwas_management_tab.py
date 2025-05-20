@@ -1,11 +1,10 @@
 import pandas as pd
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QPushButton,
-    QLineEdit, QGroupBox, QFormLayout, QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox
+    QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox
 )
 
-from common_tab import CommonTab
+from common_tab import CommonTab, DraggableLineEdit
 from gwas_operations import GWASOperations
 
 
@@ -17,46 +16,6 @@ class GWASTab(CommonTab):
         self.init_worker()
 
     def init_ui(self):
-        """初始化用户界面"""
-        # 设置窗口样式
-        self.setStyleSheet("""
-            QWidget {
-                font-family: "Segoe UI";
-                font-size: 12px;
-            }
-            QGroupBox {
-                font-size: 14px;
-                font-weight: bold;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                margin-top: 10px;
-                padding-top: 15px;
-            }
-            QLineEdit, QComboBox {
-                padding: 5px;
-                border: 1px solid #ccc;
-                border-radius: 3px;
-            }
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                padding: 8px;
-                border-radius: 5px;
-                font-size: 12px;
-            }
-            QPushButton:hover {
-                background-color: #1976D2;
-            }
-            QTextEdit {
-                border: 1px solid #ccc;
-                border-radius: 3px;
-                padding: 5px;
-            }
-            QLabel {
-                font-size: 12px;
-            }
-        """)
-
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(15)
@@ -136,11 +95,11 @@ class GWASTab(CommonTab):
         file_layout = QFormLayout()
 
         # 实例变量初始化
-        self.pheno_file_edit = QLineEdit()
-        self.geno_file_edit = QLineEdit()
-        self.kinship_file_edit = QLineEdit()
-        self.covar_file_edit = QLineEdit()
-        # self.core_sample_edit = QLineEdit()
+        self.pheno_file_edit = DraggableLineEdit()
+        self.geno_file_edit = DraggableLineEdit()
+        self.kinship_file_edit = DraggableLineEdit()
+        self.covar_file_edit = DraggableLineEdit()
+        # self.core_sample_edit = DraggableLineEdit()
 
         # 为每个文件选择创建布局
         def add_file_selector(label_text, line_edit):
@@ -207,7 +166,7 @@ class GWASTab(CommonTab):
         result_file_path_group = QGroupBox("结果文件路径选择")
         result_file_path_layout = QHBoxLayout()
 
-        self.result_file_path_edit = QLineEdit()
+        self.result_file_path_edit = DraggableLineEdit()
         self.result_file_path_edit.setPlaceholderText("选择结果文件保存路径")
 
         btn_select_result_path = QPushButton("选择输出路径")
