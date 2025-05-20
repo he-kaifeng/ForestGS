@@ -37,6 +37,7 @@ def read_vcf(vcf_file, sample_ids=None):
     if sample_ids is not None:
         vcf_samples = sample_ids
 
+
     vcf_arr = []
 
     for sample in vcf_samples:
@@ -52,7 +53,7 @@ def read_vcf(vcf_file, sample_ids=None):
             try:
                 sum_alleles = sum(int(allele) for allele in alleles)
             except ValueError:
-                # todo 填充vcf文件
+                # 填充vcf文件
                 sum_alleles = -1
             processed_data.append(sum_alleles)
         vcf_arr.append(processed_data)
@@ -103,7 +104,9 @@ def genomic_selections(genotypes, phenotypic_data, model, threads, use_gpu, opti
         k = 40000
         selector = SelectKBest(score_func=f_regression, k=k)
         x_train = selector.fit_transform(x_train, y_train)
-        x_test = selector.transform(x_test)
+        x_test = selector.transform(genotypes)
+        train_genotypes = selector.transform(train_genotypes)
+        y_test = phenotypic_data
 
         models = {
             "GBLUP": gblup,
@@ -313,9 +316,9 @@ def parse_json_from_file(file_path):
 
 
 if __name__ == '__main__':
-    geno, geno_data = read_vcf("geno.vcf", None)
-    phe_data = get_pheno("phe.txt", "TSLL")
+    geno, geno_data = read_vcf("D:\\Projects\\R_project\\ForestGS\\data\\geno.vcf", None)
+    phe_data = get_pheno("D:\\Projects\\R_project\\ForestGS\\data\\phe\\filled_data_均值填充.txt", "Dbh")
 
-    metrics = genomic_selections(geno_data, phe_data, "GBLUP", 4, True, None, None, None)
+    metrics = genomic_selections(geno_data, phe_data, "KRR", 4, True, None, None, None)
     visualize_results(metrics, "results")
     save_actual_vs_predicted(metrics["actual_vs_predicted"], "results/actual_vs_predicted.csv")

@@ -1,7 +1,7 @@
 import os
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QFont, QImage
+from PyQt6.QtGui import QPixmap, QFont
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLabel, QScrollArea, QWidget, QTextEdit
 
 
