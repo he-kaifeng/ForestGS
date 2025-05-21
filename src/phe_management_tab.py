@@ -3,7 +3,8 @@ import os
 import pandas as pd
 from PyQt6.QtCore import Qt, QThread
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout,
+    QMessageBox, QComboBox, QSizePolicy
 )
 
 from common_tab import CommonTab, DraggableLineEdit
@@ -106,31 +107,46 @@ class PhenoManagementTab(CommonTab):
 
     def create_file_group(self):
         file_group = QGroupBox("文件选择")
-        file_layout = QVBoxLayout()
-        # 输入文件路径
-        input_file_label = QLabel("表型数据")
-        file_layout.addWidget(input_file_label)
-        file_path_layout = QHBoxLayout()
+        form_layout = QFormLayout()
+
+        form_layout.setHorizontalSpacing(20)
+        form_layout.setVerticalSpacing(10)
+
+        # 文件路径行
+        file_path_container = QWidget()
+        file_path_layout = QHBoxLayout(file_path_container)
         self.file_path = DraggableLineEdit()
+        self.file_path.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         btn_select_file = QPushButton("选择目标文件")
         btn_select_file.clicked.connect(self.open_file)
+
         btn_preview = QPushButton("预览")
         btn_preview.clicked.connect(lambda: self.preview_file(self.file_path.text()))
-        file_path_layout.addWidget(self.file_path, stretch=3)
-        file_path_layout.addWidget(btn_select_file, stretch=1)
-        file_path_layout.addWidget(btn_preview, stretch=1)
-        file_layout.addLayout(file_path_layout)
-        # 输出目录选择
-        output_label = QLabel("结果输出目录")
-        file_layout.addWidget(output_label)
-        output_path_layout = QHBoxLayout()
+
+        file_path_layout.addWidget(self.file_path, 3)
+        file_path_layout.addSpacing(10)
+        file_path_layout.addWidget(btn_select_file, 1)
+        file_path_layout.addSpacing(10)
+        file_path_layout.addWidget(btn_preview, 1)
+        form_layout.addRow(QLabel("表型数据:"), file_path_container)
+
+        # 输出路径行
+        output_path_container = QWidget()
+        output_path_layout = QHBoxLayout(output_path_container)
         self.output_dir = DraggableLineEdit()
+        self.output_dir.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         btn_output = QPushButton("选择输出路径")
         btn_output.clicked.connect(lambda: self.select_path(self.output_dir, "directory"))
-        output_path_layout.addWidget(self.output_dir, stretch=3)
-        output_path_layout.addWidget(btn_output, stretch=2)
-        file_layout.addLayout(output_path_layout)
-        file_group.setLayout(file_layout)
+
+        output_path_layout.addWidget(self.output_dir, 3)
+        output_path_layout.addSpacing(10)
+        output_path_layout.addWidget(btn_output, 2)
+        output_path_layout.addSpacing(10)
+        form_layout.addRow(QLabel("结果输出目录:"), output_path_container)
+
+        file_group.setLayout(form_layout)
         return file_group
 
     def open_file(self):

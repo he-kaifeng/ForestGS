@@ -3,7 +3,7 @@ import os
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton,
-    QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QLabel, QGridLayout
+    QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QLabel, QGridLayout, QSizePolicy
 )
 
 from common_tab import CommonTab, DraggableLineEdit
@@ -112,34 +112,47 @@ class GenoManagementTab(CommonTab):
 
     def create_file_group(self):
         file_group = QGroupBox("文件选择")
-        file_layout = QVBoxLayout()
+        file_layout = QFormLayout()
 
-        target_file_label = QLabel("基因型数据")
-        target_file_label.setStyleSheet("font-weight: bold;")
-        file_layout.addWidget(target_file_label)
+        file_layout.setHorizontalSpacing(15)
+        file_layout.setVerticalSpacing(10)
 
+        # 基因型数据行
         file_path_layout = QHBoxLayout()
         self.file_path = DraggableLineEdit()
+        self.file_path.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         btn_select_file = QPushButton("选择目标文件")
         btn_select_file.clicked.connect(lambda: self.select_path(self.file_path, mode="file"))
+
         btn_preview = QPushButton("预览")
         btn_preview.clicked.connect(lambda: self.preview_file(self.file_path.text()))
-        file_path_layout.addWidget(self.file_path, stretch=3)
-        file_path_layout.addWidget(btn_select_file, stretch=1)
-        file_path_layout.addWidget(btn_preview, stretch=1)
-        file_layout.addLayout(file_path_layout)
 
-        output_file_label = QLabel("结果输出目录")
-        file_layout.addWidget(output_file_label)
+        file_path_layout.addWidget(self.file_path, 3)
+        file_path_layout.addSpacing(10)
+        file_path_layout.addWidget(btn_select_file, 1)
+        file_path_layout.addSpacing(10)
+        file_path_layout.addWidget(btn_preview, 1)
 
+
+        file_layout.addRow("基因型数据:", file_path_layout)
+
+        # 输出路径行
         output_path_layout = QHBoxLayout()
         self.output_path = DraggableLineEdit()
+        self.output_path.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         btn_output = QPushButton("选择输出路径")
         btn_output.clicked.connect(lambda: self.select_path(self.output_path, mode="directory"))
-        output_path_layout.addWidget(self.output_path, stretch=3)
-        output_path_layout.addWidget(btn_output, stretch=2)
-        file_layout.addLayout(output_path_layout)
 
+        output_path_layout.addWidget(self.output_path, 3)
+        output_path_layout.addSpacing(10)
+        output_path_layout.addWidget(btn_output, 2)
+        output_path_layout.addSpacing(10)
+
+        file_layout.addRow("结果输出目录:", output_path_layout)
+
+        # 设置布局
         file_group.setLayout(file_layout)
         return file_group
 
@@ -185,6 +198,10 @@ class GenoManagementTab(CommonTab):
     def create_qc_group(self):
         qc_group = QGroupBox("质量控制")
         qc_layout = QFormLayout()
+
+        qc_layout.setHorizontalSpacing(20)
+        qc_layout.setVerticalSpacing(10)
+
         self.maf_spin = QDoubleSpinBox()
         self.maf_spin.setRange(0.0, 0.5)
         self.maf_spin.setValue(0.05)
@@ -219,6 +236,9 @@ class GenoManagementTab(CommonTab):
         filter_group = QGroupBox("数据过滤")
         filter_layout = QFormLayout()
 
+        filter_layout.setHorizontalSpacing(20)
+        filter_layout.setVerticalSpacing(10)
+
         self.filter_sample_input, btn_filter_sample = self.create_file_selector()
         filter_layout.addRow("保留样本列表文件路径:", btn_filter_sample)
 
@@ -239,6 +259,10 @@ class GenoManagementTab(CommonTab):
     def create_genetics_group(self):
         genetics_group = QGroupBox("遗传结构分析")
         genetics_layout = QFormLayout()
+
+        genetics_layout.setHorizontalSpacing(20)
+        genetics_layout.setVerticalSpacing(10)
+
         # 主成分数量 (PCA)
         self.pca_components_spin = QDoubleSpinBox()
         self.pca_components_spin.setRange(2, 10)
