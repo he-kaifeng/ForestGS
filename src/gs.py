@@ -99,7 +99,7 @@ def genomic_selections(genotypes, phenotypic_data, model, threads, use_gpu, opti
                        train_genotypes, train_ids):
     try:
 
-        x_train, x_test, y_train, y_test = train_test_split(genotypes, phenotypic_data, test_size=0.2, random_state=0)
+        x_train, x_test, y_train, y_test = train_test_split(genotypes, phenotypic_data, test_size=0.4, random_state=0)
 
         k = 40000
         selector = SelectKBest(score_func=f_regression, k=k)

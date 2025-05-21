@@ -11,10 +11,13 @@ class CommonTab(QWidget):
         super().__init__()
         # 设置窗口样式
         self.setStyleSheet("""
+            /* 通用样式 */
             QWidget {
                 font-family: "Segoe UI";
                 font-size: 12px;
             }
+
+            /* 分组框样式 */
             QGroupBox {
                 font-size: 14px;
                 font-weight: bold;
@@ -23,11 +26,15 @@ class CommonTab(QWidget):
                 margin-top: 10px;
                 padding-top: 15px;
             }
+
+            /* 输入框和下拉框样式 */
             DraggableLineEdit, QComboBox {
                 padding: 5px;
                 border: 1px solid #ccc;
                 border-radius: 3px;
             }
+
+            /* 按钮样式 */
             QPushButton {
                 background-color: #2196F3;
                 color: white;
@@ -38,14 +45,20 @@ class CommonTab(QWidget):
             QPushButton:hover {
                 background-color: #1976D2;
             }
+
+            /* 文本编辑框样式 */
             QTextEdit {
                 border: 1px solid #ccc;
                 border-radius: 3px;
                 padding: 5px;
             }
+
+            /* 单选按钮样式 */
             QRadioButton {
                 font-size: 12px;
             }
+
+            /* 复选框样式 */
             QCheckBox {
                 font-size: 12px;
             }

@@ -91,11 +91,24 @@ class MainWindow(QMainWindow):
     def setup_workspace_tabs(self):
         """ 设置右侧工作区标签页 """
         self.workspace_tabs = QTabWidget()
-        self.workspace_tabs.addTab(GenoManagementTab(plink_path='../bin/plink.exe'), "基因型数据处理")
-        self.workspace_tabs.addTab(PhenoManagementTab(), "表型数据处理")
-        self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), "全基因型关联分析")
-        self.workspace_tabs.addTab(GSWithDataTab(config_file='../config/curated_models.json'), "表型预测")
-        self.workspace_tabs.addTab(GSTab(), "用户数据构建模型预测")
+        self.workspace_tabs.addTab(GenoManagementTab(plink_path='../bin/plink.exe'), QIcon("../icons/geno_icon.svg"),
+                                   "基因型数据处理")
+        self.workspace_tabs.addTab(PhenoManagementTab(), QIcon("../icons/phe_icon.svg"), "表型数据处理")
+        self.workspace_tabs.addTab(GWASTab(plink_path='../bin/plink.exe'), QIcon("../icons/gwas_icon.svg"),
+                                   "全基因型关联分析")
+        self.workspace_tabs.addTab(GSWithDataTab(config_file='../config/curated_models.json'),
+                                   QIcon("../icons/gs_icon.svg"), "表型预测")
+        self.workspace_tabs.addTab(GSTab(), QIcon("../icons/gs_user_icon.svg"), "用户数据构建模型预测")
+
+        self.workspace_tabs.setStyleSheet("""
+            QTabBar::icon {
+                width: 35px;
+                height: 35px;
+            }
+            QTabBar::tab {
+                height: 40px;
+            }
+        """)
 
     def setup_menubar(self):
         """ 设置菜单栏 """
@@ -111,16 +124,20 @@ class MainWindow(QMainWindow):
         """ 设置工具栏 """
         toolbar = QToolBar("快速操作")
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, toolbar)
-
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         # 添加工具栏按钮：打开项目
-        open_project_action = QAction(QIcon("icons/open_folder.png"), "打开文件夹", self)
+        open_project_action = QAction(QIcon("../icons/open_folder.svg"), "打开文件夹", self)
         open_project_action.triggered.connect(self.open_project)
         toolbar.addAction(open_project_action)
 
         # 添加工具栏按钮：显示/隐藏文件夹区域
-        toggle_file_tree_action = QAction(QIcon("icons/folder.png"), "显示/隐藏文件夹", self)
+        toggle_file_tree_action = QAction(QIcon("../icons/folder.svg"), "显示/隐藏文件夹", self)
         toggle_file_tree_action.triggered.connect(self.toggle_file_tree)
         toolbar.addAction(toggle_file_tree_action)
+
+        about_action = QAction(QIcon("../icons/about.svg"), "关于", self)
+        about_action.triggered.connect(self.about)
+        toolbar.addAction(about_action)
 
     def setup_statusbar(self):
         """ 设置状态栏 """
@@ -164,3 +181,15 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def about(self):
+        QMessageBox.about(
+            self,
+            "关于",
+            "林木基因组育种分析平台\n\n"
+            "这是一个用于林木基因组育种数据分析的集成平台，\n"
+            "支持基因型数据处理、表型数据管理、全基因组关联分析\n"
+            "以及表型预测建模等功能。\n\n"
+            "版本：1.0.0\n"
+            "开发者：贺凯峰"
+        )

@@ -72,9 +72,6 @@ class GWASOperations(QObject):
             if not os.path.isfile(result_file):
                 raise FileNotFoundError(f"结果文件不存在: {result_file}")
             df = pd.read_csv(result_file, sep='\s+')  # 使用正则表达式匹配任意空白分隔符
-            # 过滤无效的P值并计算-log10(p)
-            df = df.dropna(subset=['P'])
-            df['minus_log10p'] = -np.log10(df['P'])
             # 为每个染色体分配颜色（交替颜色）
             colors = ['skyblue', 'navy']
             df['color'] = df['CHR'].apply(lambda x: colors[x % 2])

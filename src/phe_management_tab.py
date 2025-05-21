@@ -109,7 +109,6 @@ class PhenoManagementTab(CommonTab):
         file_layout = QVBoxLayout()
         # 输入文件路径
         input_file_label = QLabel("表型数据")
-        input_file_label.setStyleSheet("font-weight: bold;")
         file_layout.addWidget(input_file_label)
         file_path_layout = QHBoxLayout()
         self.file_path = DraggableLineEdit()
@@ -123,7 +122,6 @@ class PhenoManagementTab(CommonTab):
         file_layout.addLayout(file_path_layout)
         # 输出目录选择
         output_label = QLabel("结果输出目录")
-        output_label.setStyleSheet("font-weight: bold;")
         file_layout.addWidget(output_label)
         output_path_layout = QHBoxLayout()
         self.output_dir = DraggableLineEdit()
@@ -188,7 +186,6 @@ class PhenoManagementTab(CommonTab):
         self.sd_spin.setSuffix(" 倍标准差")
         param_layout.addRow("异常值阈值:", self.sd_spin)
         self.btn_param = QPushButton("执行异常值过滤")
-        self.btn_param.setStyleSheet("background-color: #2196F3; color: white;")
         param_layout.addWidget(self.btn_param)
         param_group.setLayout(param_layout)
         return param_group
@@ -205,23 +202,28 @@ class PhenoManagementTab(CommonTab):
         recoding_layout.addRow("归一化方法:", self.normalization_method)
         recoding_group.setLayout(recoding_layout)
         self.btn_recoding = QPushButton("执行数据归一化")
-        self.btn_recoding.setStyleSheet("background-color: #2196F3; color: white;")
         recoding_layout.addWidget(self.btn_recoding)
         return recoding_group
 
     def create_normalization_group(self):
         normalization_group = QGroupBox("数据重编码")
-        main_layout = QVBoxLayout()
-        form_layout = QFormLayout()
+        form_layout = QFormLayout()  # 使用 QFormLayout 作为主布局
+
+        # 添加重编码性状选择
         self.normalization_combobox = QComboBox()
-        form_layout.addRow(QLabel("选择重编码性状:"), self.normalization_combobox)
+        form_layout.addRow("选择重编码性状:", self.normalization_combobox)
+
+        # 添加转换方向选择
         self.recoding_direction = QComboBox()
         self.recoding_direction.addItems([
             "word2num（表型→数字）",
             "num2word（数字→表型）"
         ])
-        form_layout.addRow(QLabel("转换方向:"), self.recoding_direction)
-        main_layout.addLayout(form_layout)
+        form_layout.addRow("转换方向:", self.recoding_direction)
+
+        # 将 QLabel 和 mapping_file_widget 放在同一行
+        file_label_layout = QHBoxLayout()
+        file_label_layout.addWidget(QLabel("转化表文件:"))
         self.mapping_file_widget = QWidget()
         file_layout = QHBoxLayout()
         self.mapping_file_edit = DraggableLineEdit()
@@ -230,13 +232,19 @@ class PhenoManagementTab(CommonTab):
         file_layout.addWidget(self.mapping_file_edit)
         file_layout.addWidget(self.mapping_file_btn)
         self.mapping_file_widget.setLayout(file_layout)
-        main_layout.addWidget(QLabel("转化表文件:"))
-        main_layout.addWidget(self.mapping_file_widget)
+        file_label_layout.addWidget(self.mapping_file_widget)
+        file_label_layout.setStretch(1, 1)  # 让 mapping_file_widget 占据剩余空间
+        form_layout.addRow(file_label_layout)  # 将 QHBoxLayout 添加到 QFormLayout
+
+        # 隐藏 mapping_file_widget
         self.mapping_file_widget.hide()
         self.recoding_direction.currentIndexChanged.connect(self._toggle_mapping_file)
+
+        # 添加执行转换按钮
         self.btn_execute_recoding = QPushButton("执行转换")
-        main_layout.addWidget(self.btn_execute_recoding, alignment=Qt.AlignmentFlag.AlignRight)
-        normalization_group.setLayout(main_layout)
+        form_layout.addWidget(self.btn_execute_recoding)  # 将按钮添加到 QFormLayout
+
+        normalization_group.setLayout(form_layout)
         return normalization_group
 
     def create_missing_value_group(self):
@@ -250,7 +258,6 @@ class PhenoManagementTab(CommonTab):
         self.missing_value_method.addItems(["均值填充", "中位数填充", "众数填充", "前向填充", "后向填充"])
         missing_value_layout.addRow("填充方法:", self.missing_value_method)
         self.btn_missing_value = QPushButton("执行缺失值填充")
-        self.btn_missing_value.setStyleSheet("background-color: #2196F3; color: white;")
         missing_value_layout.addWidget(self.btn_missing_value)
         missing_value_group.setLayout(missing_value_layout)
         return missing_value_group

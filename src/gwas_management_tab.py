@@ -1,7 +1,7 @@
 import pandas as pd
 from PyQt6.QtCore import QThread
 from PyQt6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox
+    QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QSpinBox, QMessageBox, QComboBox
 )
 
 from common_tab import CommonTab, DraggableLineEdit
@@ -155,7 +155,6 @@ class GWASTab(CommonTab):
 
         # 执行分析按钮
         self.btn_run_gwas = QPushButton("执行全基因组关联分析")
-        self.btn_run_gwas.setStyleSheet("background-color: #2196F3; color: white;")
         gwas_param_layout.addWidget(self.btn_run_gwas)
 
         gwas_param_group.setLayout(gwas_param_layout)
@@ -200,7 +199,7 @@ class GWASTab(CommonTab):
                     line_edit.clear()
                     QMessageBox.critical(self, "数据加载错误",
                                          f"无法加载表型数据：\n"
-                                         f"请确保：\n1. 文件格式正确\n仅支持制表符分隔的txt文件或csv文件\n2. 包含表头行\n")
+                                         f"请确保：\n1. 文件格式正确\n仅支持制表符分隔的txt文件或csv文件\n2. 包含表头行\n3.包含FID和IID列")
             except Exception as e:
                 line_edit.clear()
                 QMessageBox.critical(self, "数据加载错误",
