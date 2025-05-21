@@ -5,14 +5,14 @@
       "populations": [
         {
           "population": "a",
-          "paper": "aaa",
+          "paper": "The genetic mechanism of heterosis utilization in maize improvement",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
           "phe": "../config/data/phe.txt",
           "geno": "../config/data/geno.vcf"
         },
         {
           "population": "b",
-          "paper": "bbb",
+          "paper": "Target-oriented prioritization: targeted selection strategy by integrating organismal and molecular traits through predictive analytics in breeding",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
           "phe": "../config/data/phe.txt",
           "geno": "../config/data/geno.vcf"
@@ -24,14 +24,14 @@
       "populations": [
         {
           "population": "c",
-          "paper": "ccc",
+          "paper": "The genomic basis of geographic differentiation and fiber improvement in cultivated cotton",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
           "phe": "../config/data/phe.txt",
           "geno": "../config/data/geno.vcf"
         },
         {
           "population": "d",
-          "paper": "ddd",
+          "paper": "GWAS, MWAS and mGWAS provide insights into precision agriculture based on genotype-dependent microbial effects in foxtail millet",
           "url": "https://iagr.genomics.cn/CropGS/#/PhenotypePrediction",
           "phe": "../config/data/phe.txt",
           "geno": "../config/data/geno.vcf"

@@ -1,7 +1,6 @@
 import pandas as pd
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QPushButton, QGridLayout, QRadioButton, QLabel, QComboBox, QSpinBox, QCheckBox, \
-    QMessageBox
+from PyQt6.QtWidgets import QPushButton, QLabel, QComboBox, QSpinBox, QMessageBox, QFormLayout
 from PyQt6.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout
 
 from common_tab import CommonTab, DraggableLineEdit
@@ -31,10 +30,9 @@ class GSWithDataTab(CommonTab):
             "core_sample_file": None,
             "result_dir": self.result_file_path_edit.text().strip(),
             "trait": self.trait_combo.currentText(),
-            "models": next(
-                (model for model, radio_button in self.model_radio_buttons.items() if radio_button.isChecked()), None),
+            "models": self.model_combo.currentText(),
             "threads": self.threads_spin.value(),
-            "use_gpu": self.gpu_check.isChecked(),
+            "use_gpu": self.gpu_combo.currentText() == "启用",
             "optimization": self.optimization_combo.currentText(),
         }
         self.log_view.append("开始 GS 分析...")
@@ -66,34 +64,28 @@ class GSWithDataTab(CommonTab):
 
     def create_species_population_group(self):
         group = QGroupBox("选择物种和群体")
-        layout = QVBoxLayout()
+        layout = QFormLayout()
 
-        species_layout = QHBoxLayout()
-        species_label = QLabel("物种:")
+        layout.setHorizontalSpacing(20)
+        # 物种行
         self.species_combo = QComboBox()
         self.species_combo.addItems([m["specie"] for m in self.config["curated_models"]])
-        species_layout.addWidget(species_label)
-        species_layout.addWidget(self.species_combo)
+        layout.addRow("物种:", self.species_combo)
 
-        population_layout = QHBoxLayout()
-        population_label = QLabel("群体:")
+        # 群体行
         self.population_combo = QComboBox()
-        population_layout.addWidget(population_label)
-        population_layout.addWidget(self.population_combo)
+        layout.addRow("群体:", self.population_combo)
 
+        # 文献信息
         self.paper_info_label = QLabel("文献信息：")
         self.paper_info_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
-        self.paper_info_label.setStyleSheet("color: blue; text-decoration: underline;")
+        layout.addRow("文献信息:", self.paper_info_label)  # 单独添加，不带标签
 
         # 信号连接
         self.species_combo.currentIndexChanged.connect(self._update_populations)
         self.population_combo.currentIndexChanged.connect(self._update_paper_info)
 
-        layout.addLayout(species_layout)
-        layout.addLayout(population_layout)
-        layout.addWidget(self.paper_info_label)
-        group.setLayout(layout)
-
+        # 初始化逻辑
         if self.species_combo.count() > 0:
             self.species_combo.setCurrentIndex(0)
             self._update_populations()
@@ -101,6 +93,7 @@ class GSWithDataTab(CommonTab):
                 self.population_combo.setCurrentIndex(0)
                 self._update_paper_info()
 
+        group.setLayout(layout)
         return group
 
     def _update_populations(self):
@@ -119,8 +112,8 @@ class GSWithDataTab(CommonTab):
             if model["specie"] == selected_specie:
                 for population in model["populations"]:
                     if population["population"] == selected_population:
-                        paper_link = f"<a href='{population['url']}'>{population['paper']}</a>"
-                        self.paper_info_label.setText(f"文献信息：{paper_link}")
+                        paper_link = f"<a href='{population['url']}' style='text-decoration: none;'>{population['paper']}</a>"
+                        self.paper_info_label.setText(f"{paper_link}")
                         self.paper_info_label.setOpenExternalLinks(True)
                         self.pheno_file = population["phe"]
                         self.geno_file = population["geno"]
@@ -149,97 +142,104 @@ class GSWithDataTab(CommonTab):
 
     def create_gs_param_group(self):
         gs_param_group = QGroupBox("GS 参数设置")
+        gs_param_layout = QFormLayout()
 
-        gs_param_layout = QVBoxLayout()
+        # 设置表单布局样式
+        gs_param_layout.setHorizontalSpacing(20)  # 标签与控件间距
+        gs_param_layout.setVerticalSpacing(15)  # 控件垂直间距
 
-        trait_layout = QHBoxLayout()
-        trait_label = QLabel("选择性状:")
-
+        # 选择性状行
         self.trait_combo.setPlaceholderText("请选择性状")
-        trait_layout.addWidget(trait_label)
-        trait_layout.addWidget(self.trait_combo)
-        gs_param_layout.addLayout(trait_layout)
+        gs_param_layout.addRow(QLabel("选择性状:"), self.trait_combo)
 
-        model_group = QGroupBox("选择模型")
-        model_layout = QGridLayout()
-        self.model_radio_buttons = {
-            "GBLUP": QRadioButton("GBLUP"),
-            "rrBLUP": QRadioButton("rrBLUP(Ridge)"),
-            "BayesA": QRadioButton("BayesA"),
-            "SVR": QRadioButton("SVR"),
-            "RF": QRadioButton("RF"),
-            "LASSO": QRadioButton("LASSO"),
-            "CatBoost": QRadioButton("CatBoost"),
-            "XGBoost": QRadioButton("XGBoost"),
-            "LightGBM": QRadioButton("LightGBM"),
-            "GBDT": QRadioButton("GBDT"),
-            "ElasticNet": QRadioButton("ElasticNet")
+        # 模型分类
+        self.model_categories = {
+            "BLUP": ["GBLUP", "rrBLUP(Ridge)"],
+            "机器学习": ["SVR", "RF", "CatBoost", "XGBoost", "LightGBM", "GBDT"],
+            "贝叶斯方法": ["BayesA"],
+            "正则化方法": ["LASSO", "ElasticNet"]
         }
 
-        row, col = 0, 0
-        for radio_button in self.model_radio_buttons.values():
-            model_layout.addWidget(radio_button, row, col)
-            col += 1
-            if col > 1:  # 每行两列
-                col = 0
-                row += 1
-        model_group.setLayout(model_layout)
-        gs_param_layout.addWidget(model_group)
+        # 模型类别选择
+        self.category_combo = QComboBox()
+        self.category_combo.addItems(self.model_categories.keys())
+        self.category_combo.currentTextChanged.connect(self.update_model_combo)
+        gs_param_layout.addRow(QLabel("模型类别:"), self.category_combo)
+
+        # 具体模型选择
+        self.model_combo = QComboBox()
+        gs_param_layout.addRow(QLabel("具体模型:"), self.model_combo)
+        self.update_model_combo(self.category_combo.currentText())
+
         # 线程数
-        threads_layout = QHBoxLayout()
-        threads_label = QLabel("线程数:")
         self.threads_spin = QSpinBox()
         self.threads_spin.setRange(1, 16)
         self.threads_spin.setValue(4)
-        threads_layout.addWidget(threads_label)
-        threads_layout.addWidget(self.threads_spin)
-        gs_param_layout.addLayout(threads_layout)
+        gs_param_layout.addRow(QLabel("线程数:"), self.threads_spin)
 
-        self.gpu_check = QCheckBox("使用 GPU 加速")
-        gs_param_layout.addWidget(self.gpu_check)
+        # GPU加速
+        self.gpu_combo = QComboBox()
+        self.gpu_combo.addItems(["启用", "禁用"])
+        gs_param_layout.addRow(QLabel("使用 GPU 加速:"), self.gpu_combo)
 
-        optimization_layout = QHBoxLayout()
-        optimization_label = QLabel("优化算法:")
+        # 优化算法
         self.optimization_combo = QComboBox()
         self.optimization_combo.addItems(["网格搜索", "随机搜索", "贝叶斯优化"])
-        optimization_layout.addWidget(optimization_label)
-        optimization_layout.addWidget(self.optimization_combo)
-        gs_param_layout.addLayout(optimization_layout)
+        gs_param_layout.addRow(QLabel("优化算法:"), self.optimization_combo)
 
+        # 执行按钮
         self.btn_run_gs = QPushButton("执行基因型选择")
-        gs_param_layout.addWidget(self.btn_run_gs)
+        gs_param_layout.addRow(None, self.btn_run_gs)  # 无标签行
 
+        # 设置布局
         gs_param_group.setLayout(gs_param_layout)
         return gs_param_group
 
+    def update_model_combo(self, category):
+        current_models = self.model_categories.get(category, [])
+        self.model_combo.clear()
+        self.model_combo.addItems(current_models)
+
     def create_result_file_path_group(self):
         result_file_path_group = QGroupBox("文件路径选择")
-        main_layout = QVBoxLayout()
+        form_layout = QFormLayout()
 
-        training_layout = QHBoxLayout()
-        lbl_training = QLabel("预测文件：")  # 新增标签
+        # 设置表单布局样式
+        form_layout.setHorizontalSpacing(20)  # 标签与控件间距
+        form_layout.setVerticalSpacing(15)  # 控件垂直间距
+
+        # 预测文件行
+        lbl_training = QLabel("预测文件：")
         self.training_file_path_edit = DraggableLineEdit()
         self.training_file_path_edit.setPlaceholderText("选择预测文件路径")
+
+        # 按钮容器
+        training_btn_layout = QHBoxLayout()
         btn_training = QPushButton("选择训练基因型文件")
         btn_training.clicked.connect(lambda: self.select_path(self.training_file_path_edit, mode="file"))
+        training_btn_layout.addWidget(self.training_file_path_edit, stretch=5)
+        training_btn_layout.addSpacing(10)
+        training_btn_layout.addWidget(btn_training, stretch=1)
 
-        training_layout.addWidget(lbl_training)
-        training_layout.addWidget(self.training_file_path_edit)
-        training_layout.addWidget(btn_training)
+        # 添加预测文件行
+        form_layout.addRow(lbl_training, training_btn_layout)
 
-        result_layout = QHBoxLayout()
+        # 结果路径行
         lbl_result = QLabel("结果路径：")
         self.result_file_path_edit = DraggableLineEdit()
         self.result_file_path_edit.setPlaceholderText("选择结果文件保存路径")
+
+        # 结果按钮容器
+        result_btn_layout = QHBoxLayout()
         btn_result = QPushButton("选择输出路径")
         btn_result.clicked.connect(lambda: self.select_path(self.result_file_path_edit, mode="directory"))
+        result_btn_layout.addWidget(self.result_file_path_edit, stretch=5)
+        result_btn_layout.addSpacing(10)
+        result_btn_layout.addWidget(btn_result, stretch=1)
 
-        result_layout.addWidget(lbl_result)
-        result_layout.addWidget(self.result_file_path_edit)
-        result_layout.addWidget(btn_result)
+        # 添加结果路径行
+        form_layout.addRow(lbl_result, result_btn_layout)
 
-        main_layout.addLayout(training_layout)
-        main_layout.addLayout(result_layout)
-
-        result_file_path_group.setLayout(main_layout)
+        # 设置布局
+        result_file_path_group.setLayout(form_layout)
         return result_file_path_group

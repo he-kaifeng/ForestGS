@@ -1,6 +1,6 @@
 import pandas as pd
 from PyQt6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QCheckBox, QSpinBox, QMessageBox, QComboBox, QRadioButton, QGridLayout
+    QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QSpinBox, QMessageBox, QComboBox
 )
 
 from common_tab import CommonTab, DraggableLineEdit
@@ -30,10 +30,9 @@ class GSTab(CommonTab):
             "core_sample_file": self.core_sample_edit.text().strip() if self.core_sample_edit.text().strip() else None,
             "result_dir": self.result_file_path_edit.text().strip(),
             "trait": self.trait_combo.currentText(),
-            "models": next(
-                (model for model, radio_button in self.model_radio_buttons.items() if radio_button.isChecked()), None),
+            "models": self.model_combo.currentText(),
             "threads": self.threads_spin.value(),
-            "use_gpu": self.gpu_check.isChecked(),
+            "use_gpu": self.gpu_combo.currentText() == "启用",
             "optimization": self.optimization_combo.currentText(),
         }
         self.log_view.append("开始 GS 分析...")
@@ -91,70 +90,65 @@ class GSTab(CommonTab):
         return file_group
 
     def create_gs_param_group(self):
-
         gs_param_group = QGroupBox("GS 参数设置")
+        form_layout = QFormLayout()
 
-        gs_param_layout = QVBoxLayout()
+        # 设置表单布局样式
+        form_layout.setHorizontalSpacing(20)  # 标签与控件间距
+        form_layout.setVerticalSpacing(15)  # 控件垂直间距
 
-        trait_layout = QHBoxLayout()
-        trait_label = QLabel("选择性状:")
+        # 选择性状行
         self.trait_combo = QComboBox()
         self.trait_combo.setPlaceholderText("请选择性状")
-        trait_layout.addWidget(trait_label)
-        trait_layout.addWidget(self.trait_combo)
-        gs_param_layout.addLayout(trait_layout)
+        form_layout.addRow(QLabel("选择性状:"), self.trait_combo)
 
-        model_group = QGroupBox("选择模型")
-        model_layout = QGridLayout()
-        self.model_radio_buttons = {
-            "GBLUP": QRadioButton("GBLUP"),
-            "rrBLUP": QRadioButton("rrBLUP(Ridge)"),
-            "BayesA": QRadioButton("BayesA"),
-            "SVR": QRadioButton("SVR"),
-            "RF": QRadioButton("RF"),
-            "LASSO": QRadioButton("LASSO"),
-            "CatBoost": QRadioButton("CatBoost"),
-            "XGBoost": QRadioButton("XGBoost"),
-            "LightGBM": QRadioButton("LightGBM"),
-            "GBDT": QRadioButton("GBDT"),
-            "ElasticNet": QRadioButton("ElasticNet")
+        # 模型分类
+        self.model_categories = {
+            "BLUP": ["GBLUP", "rrBLUP(Ridge)"],
+            "机器学习": ["SVR", "RF", "CatBoost", "XGBoost", "LightGBM", "GBDT"],
+            "贝叶斯方法": ["BayesA"],
+            "正则化方法": ["LASSO", "ElasticNet"]
         }
 
-        row, col = 0, 0
-        for radio_button in self.model_radio_buttons.values():
-            model_layout.addWidget(radio_button, row, col)
-            col += 1
-            if col > 1:  # 每行两列
-                col = 0
-                row += 1
-        model_group.setLayout(model_layout)
-        gs_param_layout.addWidget(model_group)
+        # 模型类别选择
+        self.category_combo = QComboBox()
+        self.category_combo.addItems(self.model_categories.keys())
+        self.category_combo.currentTextChanged.connect(self.update_model_combo)
+        form_layout.addRow(QLabel("模型类别:"), self.category_combo)
+
+        # 具体模型选择
+        self.model_combo = QComboBox()
+        form_layout.addRow(QLabel("具体模型:"), self.model_combo)
+        self.update_model_combo(self.category_combo.currentText())
+
         # 线程数
-        threads_layout = QHBoxLayout()
-        threads_label = QLabel("线程数:")
         self.threads_spin = QSpinBox()
         self.threads_spin.setRange(1, 16)
         self.threads_spin.setValue(4)
-        threads_layout.addWidget(threads_label)
-        threads_layout.addWidget(self.threads_spin)
-        gs_param_layout.addLayout(threads_layout)
+        form_layout.addRow(QLabel("线程数:"), self.threads_spin)
 
-        self.gpu_check = QCheckBox("使用 GPU 加速")
-        gs_param_layout.addWidget(self.gpu_check)
+        # GPU加速
+        self.gpu_combo = QComboBox()
+        self.gpu_combo.addItems(["启用", "禁用"])
+        form_layout.addRow(QLabel("使用 GPU 加速:"), self.gpu_combo)
 
-        optimization_layout = QHBoxLayout()
-        optimization_label = QLabel("优化算法:")
+        # 优化算法
         self.optimization_combo = QComboBox()
         self.optimization_combo.addItems(["网格搜索", "随机搜索", "贝叶斯优化"])
-        optimization_layout.addWidget(optimization_label)
-        optimization_layout.addWidget(self.optimization_combo)
-        gs_param_layout.addLayout(optimization_layout)
+        form_layout.addRow(QLabel("优化算法:"), self.optimization_combo)
 
+        # 执行按钮
         self.btn_run_gs = QPushButton("执行基因型选择")
-        gs_param_layout.addWidget(self.btn_run_gs)
+        form_layout.addRow(None, self.btn_run_gs)  # 无标签行
 
-        gs_param_group.setLayout(gs_param_layout)
+        # 设置布局
+        gs_param_group.setLayout(form_layout)
         return gs_param_group
+
+    def update_model_combo(self, category):
+        current_models = self.model_categories.get(category, [])
+        self.model_combo.clear()
+        self.model_combo.addItems(current_models)
 
     def create_result_file_path_group(self):
         result_file_path_group = QGroupBox("结果文件路径选择")

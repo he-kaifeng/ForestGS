@@ -3,7 +3,8 @@ import os
 import pandas as pd
 from PyQt6.QtCore import Qt, QThread
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout, QMessageBox, QComboBox, QSizePolicy
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout,
+    QMessageBox, QComboBox, QSizePolicy
 )
 
 from common_tab import CommonTab, DraggableLineEdit
@@ -106,31 +107,44 @@ class PhenoManagementTab(CommonTab):
 
     def create_file_group(self):
         file_group = QGroupBox("文件选择")
-        file_layout = QVBoxLayout()
-        # 输入文件路径
-        input_file_label = QLabel("表型数据")
-        file_layout.addWidget(input_file_label)
+        form_layout = QFormLayout()
+
+        form_layout.setHorizontalSpacing(15)
+        form_layout.setVerticalSpacing(10)
+
+        # 文件路径行
         file_path_layout = QHBoxLayout()
         self.file_path = DraggableLineEdit()
+        self.file_path.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         btn_select_file = QPushButton("选择目标文件")
         btn_select_file.clicked.connect(self.open_file)
+
         btn_preview = QPushButton("预览")
         btn_preview.clicked.connect(lambda: self.preview_file(self.file_path.text()))
-        file_path_layout.addWidget(self.file_path, stretch=3)
-        file_path_layout.addWidget(btn_select_file, stretch=1)
-        file_path_layout.addWidget(btn_preview, stretch=1)
-        file_layout.addLayout(file_path_layout)
-        # 输出目录选择
-        output_label = QLabel("结果输出目录")
-        file_layout.addWidget(output_label)
+
+        file_path_layout.addWidget(self.file_path, 3)
+        file_path_layout.addSpacing(10)
+        file_path_layout.addWidget(btn_select_file, 1)
+        file_path_layout.addSpacing(10)
+        file_path_layout.addWidget(btn_preview, 1)
+        form_layout.addRow("表型数据:", file_path_layout)
+
+        # 输出路径行
         output_path_layout = QHBoxLayout()
         self.output_dir = DraggableLineEdit()
+        self.output_dir.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         btn_output = QPushButton("选择输出路径")
         btn_output.clicked.connect(lambda: self.select_path(self.output_dir, "directory"))
-        output_path_layout.addWidget(self.output_dir, stretch=3)
-        output_path_layout.addWidget(btn_output, stretch=2)
-        file_layout.addLayout(output_path_layout)
-        file_group.setLayout(file_layout)
+
+        output_path_layout.addWidget(self.output_dir, 3)
+        output_path_layout.addSpacing(10)
+        output_path_layout.addWidget(btn_output, 2)
+        output_path_layout.addSpacing(10)
+        form_layout.addRow("结果输出目录:", output_path_layout)
+
+        file_group.setLayout(form_layout)
         return file_group
 
     def open_file(self):
@@ -207,7 +221,7 @@ class PhenoManagementTab(CommonTab):
 
     def create_normalization_group(self):
         normalization_group = QGroupBox("数据重编码")
-        form_layout = QFormLayout()  # 使用 QFormLayout 作为主布局
+        form_layout = QFormLayout()
 
         # 添加重编码性状选择
         self.normalization_combobox = QComboBox()
@@ -233,8 +247,8 @@ class PhenoManagementTab(CommonTab):
         file_layout.addWidget(self.mapping_file_btn)
         self.mapping_file_widget.setLayout(file_layout)
         file_label_layout.addWidget(self.mapping_file_widget)
-        file_label_layout.setStretch(1, 1)  # 让 mapping_file_widget 占据剩余空间
-        form_layout.addRow(file_label_layout)  # 将 QHBoxLayout 添加到 QFormLayout
+        file_label_layout.setStretch(1, 1)
+        form_layout.addRow(file_label_layout)
 
         # 隐藏 mapping_file_widget
         self.mapping_file_widget.hide()
@@ -242,7 +256,7 @@ class PhenoManagementTab(CommonTab):
 
         # 添加执行转换按钮
         self.btn_execute_recoding = QPushButton("执行转换")
-        form_layout.addWidget(self.btn_execute_recoding)  # 将按钮添加到 QFormLayout
+        form_layout.addWidget(self.btn_execute_recoding)
 
         normalization_group.setLayout(form_layout)
         return normalization_group
