@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 class GWASOperations(QObject):
     # 定义信号
     start_gwas = pyqtSignal(dict)  # 触发 GWAS 操作的信号
+    operation_complete = pyqtSignal(str)
     progress_signal = pyqtSignal(str)  # 进度信号
     error_signal = pyqtSignal(str)  # 错误信号
     result_signal = pyqtSignal(str)  # 结果信号
@@ -54,8 +55,9 @@ class GWASOperations(QObject):
             self.progress_signal.emit(f"执行命令: {' '.join(plink_cmd)}")
             subprocess.run(plink_cmd, check=True)
             # 处理结果
-            self.progress_signal.emit("GWAS 分析完成！")
-            self.result_signal.emit(f"结果已保存到: {gwas_args['result_dir']}")
+            result_message = f"GWAS 分析完成！\n结果已保存到: {gwas_args['result_dir']}"
+            self.operation_complete.emit(result_message)
+            self.result_signal.emit(result_message)
             # 调用绘图函数
             self.plot_manhattan_and_qq(gwas_args["result_dir"])
 

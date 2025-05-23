@@ -3,14 +3,14 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import pyqtSignal, QThread
 
 
-class PhenoOperations(QObject):
+class PhenoOperations(QThread):
     # 定义信号，用于与UI线程通信
     progress_signal = pyqtSignal(str)  # 进度信息
     error_signal = pyqtSignal(str)  # 错误信息
-    result_signal = pyqtSignal(pd.DataFrame)  # 处理结果
+    operation_complete = pyqtSignal(str)  # 操作完成状态
     start_outlier_filter = pyqtSignal(pd.DataFrame, str, float, str)
     start_missing_value_fill = pyqtSignal(pd.DataFrame, str, str, str)
     start_normalization = pyqtSignal(pd.DataFrame, str, str, str)
@@ -61,8 +61,8 @@ class PhenoOperations(QObject):
             # 保存填充后的数据
             filled_file_path = os.path.join(out_dir, f'filled_data_{method}.txt')
             data.to_csv(filled_file_path, index=False, encoding='utf-8', sep='\t')
-            self.result_signal.emit(data)
             self.progress_signal.emit(f"缺失值填充完成，结果已保存到: {filled_file_path}")
+            self.operation_complete.emit(f"缺失值填充完成\n结果已保存到: {filled_file_path}")
         except Exception as e:
             self.error_signal.emit(f"缺失值填充失败: {str(e)}")
 
@@ -108,9 +108,8 @@ class PhenoOperations(QObject):
             plt.tight_layout()
             plt.savefig(plot_file_path, dpi=300)
             plt.close()
-            # 发送结果信号
-            self.result_signal.emit(filtered_data)
             self.progress_signal.emit(f"异常值过滤完成，结果已保存到: {filtered_file_path}")
+            self.operation_complete.emit(f"异常值过滤完成\n结果已保存到: {filtered_file_path}")
         except Exception as e:
             self.error_signal.emit(f"异常值过滤失败: {str(e)}")
 
@@ -169,9 +168,7 @@ class PhenoOperations(QObject):
                 normalized_file_path = os.path.join(out_dir, f'normalized_data_{trait}_{method}.txt')
             data.to_csv(normalized_file_path, index=False, encoding='utf-8', sep='\t')
             self.progress_signal.emit(f"归一化后的数据已保存到: {normalized_file_path}")
-            # 发送最终结果信号
-            self.result_signal.emit(data)
-            self.progress_signal.emit("数据归一化完成")
+            self.operation_complete.emit(f"数据归一化完成\n结果已保存到: {normalized_file_path}")
         except Exception as e:
             self.error_signal.emit(f"数据归一化失败: {str(e)}")
 
@@ -213,8 +210,7 @@ class PhenoOperations(QObject):
             recoded_file_path = os.path.join(out_dir, f'recoded_data_{trait}.txt')
             data.to_csv(recoded_file_path, index=False, encoding='utf-8', sep='\t')
             self.progress_signal.emit(f"重编码后的数据已保存到: {recoded_file_path}")
-            # 发送结果信号
-            self.result_signal.emit(data)
+            self.operation_complete.emit(f"数据重编码完成\n结果已保存到: {recoded_file_path}")
             self.progress_signal.emit(f"性状 {trait} 的重编码完成")
         except Exception as e:
             self.error_signal.emit(f"数据重编码失败: {str(e)}")

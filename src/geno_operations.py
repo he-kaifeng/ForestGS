@@ -4,9 +4,9 @@ import shutil
 import subprocess
 
 import numpy as np
-import seaborn as sns
 import pandas as pd
-from PyQt6.QtCore import QObject, pyqtSignal
+import seaborn as sns
+from PyQt6.QtCore import pyqtSignal, QObject
 from matplotlib import pyplot as plt
 
 
@@ -14,15 +14,17 @@ class GenoOperations(QObject):
     # 定义信号，用于与UI线程通信
     progress_signal = pyqtSignal(str)  # 进度信息
     error_signal = pyqtSignal(str)  # 错误信息
-    result_signal = pyqtSignal(str)  # 处理结果（输出文件路径）
+    operation_complete = pyqtSignal(str)  # 操作完成状态
     # 定义信号，用于触发具体操作
     start_convert_format = pyqtSignal(str, str, str)  # 文件格式转换
     start_quality_control = pyqtSignal(str, str, float, float, float, float)  # 质量控制
     start_filter_data = pyqtSignal(str, str, str, str, str, str)  # 数据过滤
     start_genetic_analysis = pyqtSignal(str, str, float, str, str)  # 遗传结构分析
 
-    def __init__(self, plink_path):
+    def __init__(self):
         super().__init__()
+
+    def initialize(self, plink_path):
         self.plink_path = plink_path
         # 将信号连接到具体实现函数
         self.start_convert_format.connect(self.handle_convert_format)
@@ -91,7 +93,7 @@ class GenoOperations(QObject):
                 self.progress_signal.emit(f"PLINK错误信息:\n{process.stderr}")
             self._cleanup_files(output_file)
             self.progress_signal.emit("文件格式转换完成！")
-            self.result_signal.emit(output_file)
+            self.operation_complete.emit(f"缺失值填充完成\n结果已保存到: {output_dir}")
         except subprocess.CalledProcessError as e:
             self.error_signal.emit(f"PLINK工具执行失败: {str(e)}")
         except Exception as e:
@@ -167,13 +169,13 @@ class GenoOperations(QObject):
             ], log_file)
             # 生成图表
             self._generate_het_histogram(output_prefix)
-            self._generate_maf_histogram(output_prefix)  # 使用 .frqx 文件生成 MAF 分布直方图
+            self._generate_maf_histogram(output_prefix)
             self._generate_imiss_histogram(output_prefix)
             self._generate_lmiss_histogram(output_prefix)
             # 删除不需要的中间文件和日志文件
             self._cleanup_intermediate_files(output_prefix)
             self.progress_signal.emit("质量控制完成！")
-            self.result_signal.emit(output_prefix)
+            self.operation_complete.emit(f"质量控制完成\n结果已保存到: {output_dir}")
         except Exception as e:
             self.error_signal.emit(f"质量控制失败: {str(e)}")
 
@@ -194,7 +196,6 @@ class GenoOperations(QObject):
             raise RuntimeError(f"PLINK 命令执行失败: {' '.join(cmd)}")
 
     def _generate_het_histogram(self, output_prefix):
-        """生成杂合率分布直方图"""
         het_file = f"{output_prefix}.het"
         if not os.path.exists(het_file):
             raise FileNotFoundError(f"杂合率文件未找到: {het_file}")
@@ -266,7 +267,6 @@ class GenoOperations(QObject):
         plt.close()
 
     def _cleanup_intermediate_files(self, output_prefix):
-        """删除不需要的中间文件和日志文件"""
         files_to_delete = [
             f"{output_prefix}.bed", f"{output_prefix}.bim", f"{output_prefix}.fam", f"{output_prefix}.log",
             f"{output_prefix}.nosex",
@@ -283,9 +283,8 @@ class GenoOperations(QObject):
 
     def handle_filter_data(self, input_file, output_dir, filter_sample=None, exclude_sample=None, filter_snp=None,
                            exclude_snp=None):
-        """根据输入参数对VCF、BED、PED文件进行样本和SNP的筛选"""
         try:
-            self.progress_signal.emit(f"正在执行数据筛选\n\t输入文件: {input_file}")
+            self.progress_signal.emit(f"正在执行数据筛选")
             # 获取输入文件的基本名（不带扩展名）
             base_name = os.path.splitext(os.path.basename(input_file))[0]
             result_name = base_name + "_handle"
@@ -306,12 +305,11 @@ class GenoOperations(QObject):
                 # PED文件筛选
                 self._filter_ped(input_file, output_file, filter_sample, exclude_sample, filter_snp, exclude_snp)
             self.progress_signal.emit("数据筛选完成！")
-            self.result_signal.emit(output_file)
+            self.operation_complete.emit(f"数据筛选完成\n结果已保存到: {output_dir}")
         except Exception as e:
             self.error_signal.emit(f"数据筛选失败: {str(e)}")
 
     def _filter_vcf(self, input_file, output_file, filter_sample, exclude_sample, filter_snp, exclude_snp):
-        """筛选VCF文件"""
         try:
             # 构建PLINK命令
             cmd = [self.plink_path, "--vcf", input_file, "--make-bed", "--const-fid", "--out", output_file]
@@ -321,7 +319,6 @@ class GenoOperations(QObject):
             raise RuntimeError(f"PLINK工具执行失败: {str(e)}")
 
     def _filter_bed(self, input_file, output_file, filter_sample, exclude_sample, filter_snp, exclude_snp):
-        """筛选BED文件"""
         try:
             # 获取BED文件前缀
             input_prefix = os.path.splitext(input_file)[0]
@@ -333,7 +330,6 @@ class GenoOperations(QObject):
             raise RuntimeError(f"PLINK工具执行失败: {str(e)}")
 
     def _filter_ped(self, input_file, output_file, filter_sample, exclude_sample, filter_snp, exclude_snp):
-        """筛选PED文件"""
         try:
             # 获取PED文件前缀
             input_prefix = os.path.splitext(input_file)[0]
@@ -369,7 +365,6 @@ class GenoOperations(QObject):
             raise RuntimeError(f"PLINK工具执行失败: {str(e)}")
 
     def _cleanup_files(self, output_file):
-        """删除PLINK生成的log和nosex文件"""
         log_file = f"{output_file}.log"
         nosex_file = f"{output_file}.nosex"
         if os.path.exists(log_file):
@@ -378,7 +373,6 @@ class GenoOperations(QObject):
             os.remove(nosex_file)
 
     def handle_genetic_analysis(self, input_file, output_dir, pca_components, relationship_method, extract_file=None):
-        """执行遗传分析，包括 PCA 和亲缘关系分析"""
         try:
             self.progress_signal.emit(f"正在执行遗传分析\n\t输入文件: {input_file}")
             # 获取输入文件的基本名（不带扩展名）
@@ -432,7 +426,7 @@ class GenoOperations(QObject):
             # 生成亲缘相关性热图
             self._generate_relationship_heatmap(relationship_matrix_file, output_prefix, relationship_method)
             self.progress_signal.emit("遗传分析完成！")
-            self.result_signal.emit(output_prefix)
+            self.operation_complete.emit(f"遗传分析完成\n结果已保存到: {output_dir}")
         except Exception as e:
             print(e)
             self.error_signal.emit(f"遗传分析失败: {str(e)}")

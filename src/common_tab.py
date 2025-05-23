@@ -96,6 +96,9 @@ class CommonTab(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "错误", str(e))
 
+    def show_operation_dialog(self, message):
+        QMessageBox.information(self, "操作完成", message)
+
 
 class DraggableLineEdit(QLineEdit):
     def __init__(self):

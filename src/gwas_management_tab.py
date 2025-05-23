@@ -53,6 +53,7 @@ class GWASTab(CommonTab):
         self.worker.error_signal.connect(lambda msg: QMessageBox.critical(self, "错误", msg))
         self.worker.result_signal.connect(self.handle_result)
         self.btn_run_gwas.clicked.connect(self.run_gwas)
+        self.worker.operation_complete.connect(self.show_operation_dialog)
 
     def run_gwas(self):
         """执行 GWAS 分析"""

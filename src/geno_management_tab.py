@@ -1,10 +1,10 @@
 import os
 
-from PyQt6.QtCore import QThread, Qt, QSize
+from PyQt6.QtCore import QThread
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton,
-    QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QLabel, QGridLayout, QSizePolicy
+    QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QGridLayout, QSizePolicy
 )
 
 from common_tab import CommonTab, DraggableLineEdit
@@ -21,9 +21,11 @@ class GenoManagementTab(CommonTab):
         }
         self.plink_path = plink_path
         self.init_ui()
-        self.worker = GenoOperations(self.plink_path)
+        self.worker = GenoOperations()
         self.thread = QThread()
         self.worker.moveToThread(self.thread)
+        # 在线程启动后触发初始化
+        self.thread.started.connect(lambda: self.worker.initialize(plink_path))
         self.connect_signals()
         self.thread.start()
 
@@ -46,12 +48,12 @@ class GenoManagementTab(CommonTab):
         # 连接业务逻辑的信号到UI的槽
         self.worker.progress_signal.connect(self.log_view.append)
         self.worker.error_signal.connect(lambda msg: QMessageBox.critical(self, "错误", msg))
-        self.worker.result_signal.connect(self.handle_result)
         # 连接按钮点击事件到业务逻辑
         self.btn_convert.clicked.connect(self.run_convert_format)
         self.btn_run_qc.clicked.connect(self.run_quality_control)
         self.btn_filter.clicked.connect(self.run_filter_data)
         self.btn_genetic_analysis.clicked.connect(self.run_genetic_analysis)
+        self.worker.operation_complete.connect(self.show_operation_dialog)
 
     def run_convert_format(self):
         """执行文件格式转换"""
@@ -95,12 +97,9 @@ class GenoManagementTab(CommonTab):
         output_dir = self.output_path.text()
         pca_components = self.pca_components_spin.value()
         relationship_method = self.relationship_method.currentText()
-        extract_file = self.extract_file_edit.text()
-        self.worker.start_genetic_analysis.emit(input_file, output_dir, pca_components, relationship_method,
-                                                extract_file)
-
-    def handle_result(self, result):
-        self.log_view.append("数据处理完成，结果已更新")
+        # extract_file = self.extract_file_edit.text()
+        self.worker.start_genetic_analysis.emit(input_file, output_dir, pca_components, relationship_method, None)
+        # extract_file)
 
     def validate_input(self):
         if not self.file_path.text() or not os.path.isfile(self.file_path.text()):

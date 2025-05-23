@@ -39,6 +39,7 @@ class GSWithDataTab(CommonTab):
         self.log_view.append("开始 GS 分析...")
         self.worker = GSOperations(gs_args)
         self.worker.progress_signal.connect(self.upload_message)
+        self.worker.operation_complete.connect(self.show_operation_dialog)
         self.worker.error_signal.connect(lambda msg: QMessageBox.critical(self, "错误", msg))
         self.worker.start()
 

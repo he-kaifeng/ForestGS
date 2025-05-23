@@ -17,10 +17,8 @@ class PhenoManagementTab(CommonTab):
         super().__init__()
         self.init_ui()
         self.worker = PhenoOperations()  # 业务逻辑对象
-        self.thread = QThread()  # 新线程
-        self.worker.moveToThread(self.thread)  # 将业务逻辑移动到新线程
         self.connect_signals()  # 连接信号和槽
-        self.thread.start()
+        self.worker.start()
 
     def init_ui(self):
         main_layout = QVBoxLayout()
@@ -53,11 +51,11 @@ class PhenoManagementTab(CommonTab):
     def connect_signals(self):
         self.worker.progress_signal.connect(self.log_view.append)
         self.worker.error_signal.connect(lambda msg: QMessageBox.critical(self, "错误", msg))
-        self.worker.result_signal.connect(self.handle_result)
         self.btn_param.clicked.connect(self.run_outlier_filter)
         self.btn_recoding.clicked.connect(self.run_normalization)
         self.btn_missing_value.clicked.connect(self.run_missing_value_fill)
         self.btn_execute_recoding.clicked.connect(self.run_recoding)
+        self.worker.operation_complete.connect(self.show_operation_dialog)
 
     def run_missing_value_fill(self):
         if not self.validate_input():

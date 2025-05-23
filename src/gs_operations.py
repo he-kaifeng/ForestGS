@@ -6,6 +6,7 @@ from gs import get_sample_id, read_vcf, get_pheno, genomic_selections, visualize
 class GSOperations(QThread):
     progress_signal = pyqtSignal(str)  # 进度信号
     error_signal = pyqtSignal(str)  # 错误信号
+    operation_complete = pyqtSignal(str)  # 操作完成状态
 
     def __init__(self, gs_args):
         super().__init__()
@@ -29,9 +30,10 @@ class GSOperations(QThread):
                                          self.gs_args["optimization"], train_genotypes, train_ids)
             self.progress_signal.emit("基因组选择完成")
 
-            result_str = f"基因组选择结果:\n性能指标:\n{metrics}"
+            result_str = f"基因组选择结果:\n性能指标:\nR²={metrics['R²']}\npcc = {metrics['PCC']}\nrmse = {metrics['RMSE']}"
             self.progress_signal.emit(result_str)
             visualize_results(metrics, self.gs_args["result_dir"])
             save_GEBV(metrics["gebv"], f"{self.gs_args['result_dir']}/GEBV.csv")
+
         except Exception as e:
             self.error_signal.emit(f"发生错误: {str(e)}")
