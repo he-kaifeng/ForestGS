@@ -1,5 +1,6 @@
 import pandas as pd
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QPushButton, QLabel, QComboBox, QSpinBox, QMessageBox, QFormLayout
 from PyQt6.QtWidgets import QVBoxLayout, QGroupBox, QHBoxLayout
 
@@ -189,6 +190,7 @@ class GSWithDataTab(CommonTab):
 
         # 执行按钮
         self.btn_run_gs = QPushButton("执行基因型选择")
+        self.btn_run_gs.setIcon(QIcon("../icons/run.svg"))
         gs_param_layout.addRow(None, self.btn_run_gs)  # 无标签行
 
         # 设置布局
@@ -215,7 +217,8 @@ class GSWithDataTab(CommonTab):
 
         # 按钮容器
         training_btn_layout = QHBoxLayout()
-        btn_training = QPushButton("选择训练基因型文件")
+        btn_training = QPushButton("选择预测基因型文件")
+        btn_training.setIcon(QIcon("../icons/select.svg"))
         btn_training.clicked.connect(lambda: self.select_path(self.training_file_path_edit, mode="file"))
         training_btn_layout.addWidget(self.training_file_path_edit, stretch=5)
         training_btn_layout.addSpacing(10)
@@ -232,6 +235,7 @@ class GSWithDataTab(CommonTab):
         # 结果按钮容器
         result_btn_layout = QHBoxLayout()
         btn_result = QPushButton("选择输出路径")
+        btn_result.setIcon(QIcon("../icons/result_dir.svg"))
         btn_result.clicked.connect(lambda: self.select_path(self.result_file_path_edit, mode="directory"))
         result_btn_layout.addWidget(self.result_file_path_edit, stretch=5)
         result_btn_layout.addSpacing(10)

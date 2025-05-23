@@ -1,5 +1,6 @@
 import pandas as pd
 from PyQt6.QtCore import QThread
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QSpinBox, QMessageBox, QComboBox
 )
@@ -99,6 +100,7 @@ class GWASTab(CommonTab):
         self.geno_file_edit = DraggableLineEdit()
         self.kinship_file_edit = DraggableLineEdit()
         self.covar_file_edit = DraggableLineEdit()
+
         # self.core_sample_edit = DraggableLineEdit()
 
         # 为每个文件选择创建布局
@@ -106,9 +108,11 @@ class GWASTab(CommonTab):
             file_path_layout = QHBoxLayout()
 
             btn_select_file = QPushButton("选择文件")
+            btn_select_file.setIcon(QIcon("../icons/select.svg"))
             btn_select_file.clicked.connect(lambda: self.load_traits(label_text, line_edit))
 
             btn_preview = QPushButton("预览")
+            btn_preview.setIcon(QIcon("../icons/see.svg"))
             btn_preview.clicked.connect(lambda: self.preview_file(line_edit.text()))
 
             file_path_layout.addWidget(line_edit, stretch=3)
@@ -155,6 +159,7 @@ class GWASTab(CommonTab):
 
         # 执行分析按钮
         self.btn_run_gwas = QPushButton("执行全基因组关联分析")
+        self.btn_run_gwas.setIcon(QIcon("../icons/run.svg"))
         gwas_param_layout.addWidget(self.btn_run_gwas)
 
         gwas_param_group.setLayout(gwas_param_layout)
@@ -169,6 +174,7 @@ class GWASTab(CommonTab):
         self.result_file_path_edit.setPlaceholderText("选择结果文件保存路径")
 
         btn_select_result_path = QPushButton("选择输出路径")
+        btn_select_result_path.setIcon(QIcon("../icons/result_dir.svg"))
         btn_select_result_path.clicked.connect(lambda: self.select_path(self.result_file_path_edit, mode="directory"))
 
         result_file_path_layout.addWidget(self.result_file_path_edit)

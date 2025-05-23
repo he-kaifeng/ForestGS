@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 from PyQt6.QtCore import Qt, QThread
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QDoubleSpinBox, QGroupBox, QFormLayout, QLabel, QGridLayout,
     QMessageBox, QComboBox, QSizePolicy
@@ -118,9 +119,11 @@ class PhenoManagementTab(CommonTab):
         self.file_path.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         btn_select_file = QPushButton("选择目标文件")
+        btn_select_file.setIcon(QIcon("../icons/select.svg"))
         btn_select_file.clicked.connect(self.open_file)
 
         btn_preview = QPushButton("预览")
+        btn_preview.setIcon(QIcon("../icons/see.svg"))
         btn_preview.clicked.connect(lambda: self.preview_file(self.file_path.text()))
 
         file_path_layout.addWidget(self.file_path, 3)
@@ -136,6 +139,7 @@ class PhenoManagementTab(CommonTab):
         self.output_dir.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         btn_output = QPushButton("选择输出路径")
+        btn_output.setIcon(QIcon("../icons/result_dir.svg"))
         btn_output.clicked.connect(lambda: self.select_path(self.output_dir, "directory"))
 
         output_path_layout.addWidget(self.output_dir, 3)
@@ -200,6 +204,7 @@ class PhenoManagementTab(CommonTab):
         self.sd_spin.setSuffix(" 倍标准差")
         param_layout.addRow("异常值阈值:", self.sd_spin)
         self.btn_param = QPushButton("执行异常值过滤")
+        self.btn_param.setIcon(QIcon("../icons/run.svg"))
         param_layout.addWidget(self.btn_param)
         param_group.setLayout(param_layout)
         return param_group
@@ -216,6 +221,7 @@ class PhenoManagementTab(CommonTab):
         recoding_layout.addRow("归一化方法:", self.normalization_method)
         recoding_group.setLayout(recoding_layout)
         self.btn_recoding = QPushButton("执行数据归一化")
+        self.btn_recoding.setIcon(QIcon("../icons/run.svg"))
         recoding_layout.addWidget(self.btn_recoding)
         return recoding_group
 
@@ -242,6 +248,7 @@ class PhenoManagementTab(CommonTab):
         file_layout = QHBoxLayout()
         self.mapping_file_edit = DraggableLineEdit()
         self.mapping_file_btn = QPushButton("选择转化表")
+        self.mapping_file_btn.setIcon(QIcon("../icons/select.svg"))
         self.mapping_file_btn.clicked.connect(lambda: self.select_path(self.mapping_file_edit, "file"))
         file_layout.addWidget(self.mapping_file_edit)
         file_layout.addWidget(self.mapping_file_btn)
@@ -256,6 +263,7 @@ class PhenoManagementTab(CommonTab):
 
         # 添加执行转换按钮
         self.btn_execute_recoding = QPushButton("执行转换")
+        self.btn_execute_recoding.setIcon(QIcon("../icons/run.svg"))
         form_layout.addWidget(self.btn_execute_recoding)
 
         normalization_group.setLayout(form_layout)
@@ -272,6 +280,7 @@ class PhenoManagementTab(CommonTab):
         self.missing_value_method.addItems(["均值填充", "中位数填充", "众数填充", "前向填充", "后向填充"])
         missing_value_layout.addRow("填充方法:", self.missing_value_method)
         self.btn_missing_value = QPushButton("执行缺失值填充")
+        self.btn_missing_value.setIcon(QIcon("../icons/run.svg"))
         missing_value_layout.addWidget(self.btn_missing_value)
         missing_value_group.setLayout(missing_value_layout)
         return missing_value_group

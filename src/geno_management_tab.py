@@ -1,6 +1,7 @@
 import os
 
-from PyQt6.QtCore import QThread
+from PyQt6.QtCore import QThread, Qt, QSize
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton,
     QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QLabel, QGridLayout, QSizePolicy
@@ -123,9 +124,11 @@ class GenoManagementTab(CommonTab):
         self.file_path.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         btn_select_file = QPushButton("选择目标文件")
+        btn_select_file.setIcon(QIcon("../icons/select.svg"))
         btn_select_file.clicked.connect(lambda: self.select_path(self.file_path, mode="file"))
 
         btn_preview = QPushButton("预览")
+        btn_preview.setIcon(QIcon("../icons/see.svg"))
         btn_preview.clicked.connect(lambda: self.preview_file(self.file_path.text()))
 
         file_path_layout.addWidget(self.file_path, 3)
@@ -133,7 +136,6 @@ class GenoManagementTab(CommonTab):
         file_path_layout.addWidget(btn_select_file, 1)
         file_path_layout.addSpacing(10)
         file_path_layout.addWidget(btn_preview, 1)
-
 
         file_layout.addRow("基因型数据:", file_path_layout)
 
@@ -143,6 +145,7 @@ class GenoManagementTab(CommonTab):
         self.output_path.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         btn_output = QPushButton("选择输出路径")
+        btn_output.setIcon(QIcon("../icons/result_dir.svg"))
         btn_output.clicked.connect(lambda: self.select_path(self.output_path, mode="directory"))
 
         output_path_layout.addWidget(self.output_path, 3)
@@ -191,6 +194,7 @@ class GenoManagementTab(CommonTab):
         self.target_format.addItems(["PLINK文本格式 (.ped)", "PLINK二进制格式 (.bed)", "VCF格式 (.vcf)"])
         convert_layout.addRow("转换为格式:", self.target_format)
         self.btn_convert = QPushButton("执行转换")
+        self.btn_convert.setIcon(QIcon("../icons/run.svg"))
         convert_layout.addWidget(self.btn_convert)
         convert_group.setLayout(convert_layout)
         return convert_group
@@ -227,6 +231,7 @@ class GenoManagementTab(CommonTab):
         qc_layout.addRow("R² 阈值:", self.r2_spin)
 
         self.btn_run_qc = QPushButton("执行质控")
+        self.btn_run_qc.setIcon(QIcon("../icons/run.svg"))
         qc_layout.addWidget(self.btn_run_qc)
 
         qc_group.setLayout(qc_layout)
@@ -252,6 +257,7 @@ class GenoManagementTab(CommonTab):
         filter_layout.addRow("排除SNP列表文件路径:", btn_exclude_sample)
 
         self.btn_filter = QPushButton("执行数据过滤")
+        self.btn_filter.setIcon(QIcon("../icons/run.svg"))
         filter_layout.addWidget(self.btn_filter)
         filter_group.setLayout(filter_layout)
         return filter_group
@@ -285,6 +291,7 @@ class GenoManagementTab(CommonTab):
         # genetics_layout.addRow("SNP 过滤文件:", extract_file_layout)
         # 执行遗传分析按钮
         self.btn_genetic_analysis = QPushButton("执行遗传分析")
+        self.btn_genetic_analysis.setIcon(QIcon("../icons/run.svg"))
         genetics_layout.addWidget(self.btn_genetic_analysis)
         genetics_group.setLayout(genetics_layout)
         return genetics_group
@@ -293,6 +300,7 @@ class GenoManagementTab(CommonTab):
         layout = QHBoxLayout()
         line_edit = DraggableLineEdit()
         btn = QPushButton("选择文件")
+        btn.setIcon(QIcon("../icons/select.svg"))
         btn.clicked.connect(lambda: self.select_path(line_edit, mode="file"))
         layout.addWidget(line_edit)
         layout.addSpacing(5)

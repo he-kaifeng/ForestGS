@@ -1,4 +1,5 @@
 import pandas as pd
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton, QGroupBox, QFormLayout, QLabel, QSpinBox, QMessageBox, QComboBox
 )
@@ -74,8 +75,10 @@ class GSTab(CommonTab):
         def add_file_selector(label_text, line_edit):
             file_path_layout = QHBoxLayout()
             btn_select_file = QPushButton("选择文件")
+            btn_select_file.setIcon(QIcon("../icons/select.svg"))
             btn_select_file.clicked.connect(lambda: self.load_traits(label_text, line_edit))
             btn_preview = QPushButton("预览")
+            btn_preview.setIcon(QIcon("../icons/see.svg"))
             btn_preview.clicked.connect(lambda: self.preview_file(line_edit.text()))
             file_path_layout.addWidget(line_edit, stretch=3)
             file_path_layout.addWidget(btn_select_file, stretch=1)
@@ -139,6 +142,7 @@ class GSTab(CommonTab):
 
         # 执行按钮
         self.btn_run_gs = QPushButton("执行基因型选择")
+        self.btn_run_gs.setIcon(QIcon("../icons/run.svg"))
         form_layout.addRow(None, self.btn_run_gs)  # 无标签行
 
         # 设置布局
@@ -156,6 +160,7 @@ class GSTab(CommonTab):
         self.result_file_path_edit = DraggableLineEdit()
         self.result_file_path_edit.setPlaceholderText("选择结果文件保存路径")
         btn_select_result_path = QPushButton("选择输出路径")
+        btn_select_result_path.setIcon(QIcon("../icons/result_dir.svg"))
         btn_select_result_path.clicked.connect(lambda: self.select_path(self.result_file_path_edit, mode="directory"))
         result_file_path_layout.addWidget(self.result_file_path_edit)
         result_file_path_layout.addWidget(btn_select_result_path)
