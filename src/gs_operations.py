@@ -30,8 +30,9 @@ class GSOperations(QThread):
                                          self.gs_args["optimization"], train_genotypes, train_ids)
             self.progress_signal.emit("基因组选择完成")
 
-            result_str = f"基因组选择结果:\n性能指标:\nR²={metrics['R²']}\npcc = {metrics['PCC']}\nrmse = {metrics['RMSE']}"
+            result_str = f"基因组选择结果:\n保存位置{self.gs_args['result_dir']}性能指标:\nR²={metrics['R²']}\npcc = {metrics['PCC']}\nrmse = {metrics['RMSE']}"
             self.progress_signal.emit(result_str)
+            self.operation_complete.emit(f"基因组选择完成\n结果已保存到: {self.gs_args['result_dir']}")
             visualize_results(metrics, self.gs_args["result_dir"])
             save_GEBV(metrics["gebv"], f"{self.gs_args['result_dir']}/GEBV.csv")
 

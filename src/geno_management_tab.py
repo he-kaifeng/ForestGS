@@ -4,7 +4,7 @@ from PyQt6.QtCore import QThread
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QPushButton,
-    QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QGridLayout, QSizePolicy
+    QDoubleSpinBox, QMessageBox, QGroupBox, QFormLayout, QComboBox, QGridLayout, QSizePolicy, QLabel
 )
 
 from common_tab import CommonTab, DraggableLineEdit

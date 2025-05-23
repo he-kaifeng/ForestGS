@@ -37,7 +37,6 @@ def read_vcf(vcf_file, sample_ids=None):
     if sample_ids is not None:
         vcf_samples = sample_ids
 
-
     vcf_arr = []
 
     for sample in vcf_samples:
@@ -104,9 +103,8 @@ def genomic_selections(genotypes, phenotypic_data, model, threads, use_gpu, opti
         k = 40000
         selector = SelectKBest(score_func=f_regression, k=k)
         x_train = selector.fit_transform(x_train, y_train)
-        x_test = selector.transform(genotypes)
+        x_test = selector.transform(x_test)
         train_genotypes = selector.transform(train_genotypes)
-        y_test = phenotypic_data
 
         models = {
             "GBLUP": gblup,
